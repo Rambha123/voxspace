@@ -1,15 +1,25 @@
 import { useState } from "react";
+import logoo from '../assets/logoo.png';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <nav
-      style={{ backgroundColor: "rgb(28, 37, 65)" }}
+      style={{ backgroundColor: "rgb(28, 37, 50)" }}
       className="shadow-lg px-6 py-4"
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold text-white">VoxSpace</div>
+        <a
+            href="http://localhost:5173/"
+            className="flex items-center space-x-3 rtl:space-x-reverse"
+          >
+            <img src={logoo} className="h-14" alt="Logo" />
+            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
+              Voxspace
+            </span>
+          </a>
+
 
         {/* Desktop Links */}
         <ul className="hidden md:flex space-x-6 text-white font-medium">
