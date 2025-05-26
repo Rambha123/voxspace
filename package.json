@@ -14,7 +14,10 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "bcryptjs": "^3.0.2",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "react-router-dom": "^7.6.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.7",
@@ -22,5 +25,13 @@
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rambha123/voxspace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rambha123/voxspace/issues"
+  },
+  "homepage": "https://github.com/Rambha123/voxspace#readme"
 }
