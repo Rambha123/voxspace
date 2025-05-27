@@ -47,7 +47,6 @@ export default function Signup() {
     }
   };
 
-// In your Signup.jsx component
 const handleGoogleSuccess = async (credentialResponse) => {
   try {
     const response = await axios.post("http://localhost:6969/api/google-signup", {
@@ -133,19 +132,25 @@ const handleGoogleSuccess = async (credentialResponse) => {
           />
         </div>
 
-        <div className="flex justify-center mb-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
-          >
-            {loading ? "Signing Up..." : "Sign Up"}
-          </button>
-        </div>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+  <div className="flex-1">
+    <GoogleLogin
+      onSuccess={handleGoogleSuccess}
+      onError={handleGoogleError}
+      size="large"
+      width="100%" 
+    />
+  </div>
+  <button
+    type="submit"
+    disabled={loading}
+    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
+  >
+    {loading ? "Signing Up..." : "Sign Up"}
+  </button>
+</div>
 
-        <div className="flex justify-center">
-          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
-        </div>
+       
       </form>
     </div>
   );
