@@ -14,9 +14,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
     "bcryptjs": "^3.0.2",
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",
+    "google-auth-library": "^9.15.1",
     "react-router-dom": "^7.6.1"
   },
   "devDependencies": {

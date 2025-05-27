@@ -1,5 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
+
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -35,7 +37,7 @@ export default function Signup() {
         setError("Signup failed. Please try again.");
       }
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
+      if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError("Network error: " + err.message);
@@ -43,6 +45,29 @@ export default function Signup() {
     } finally {
       setLoading(false);
     }
+  };
+
+// In your Signup.jsx component
+const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    const response = await axios.post("http://localhost:6969/api/google-signup", {
+      credential: credentialResponse.credential // Send raw credential
+    });
+
+    if (response.data.token) {
+      // Store token and handle user session
+      localStorage.setItem('token', response.data.token);
+      setSuccess("Google signup successful!");
+      // Optional: Redirect user
+    }
+  } catch (err) {
+    setError(err.response?.data?.message || "Google signup failed");
+  }
+};
+
+
+  const handleGoogleError = () => {
+    setError("Google Sign In failed. Please try again.");
   };
 
   return (
@@ -108,7 +133,7 @@ export default function Signup() {
           />
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-4">
           <button
             type="submit"
             disabled={loading}
@@ -116,6 +141,10 @@ export default function Signup() {
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
         </div>
       </form>
     </div>
