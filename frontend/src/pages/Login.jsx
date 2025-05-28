@@ -1,16 +1,38 @@
 // src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
-    // TODO: Handle response, store JWT, redirect
+    setError(null); // Reset error before attempt
+
+    try {
+      const res = await axios.post("http://localhost:6969/api/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = res.data;
+
+      // Store token in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect to home
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data?.message || "Login failed. Please try again."
+      );
+    }
   };
 
   const handleSignup = () => {
@@ -30,6 +52,10 @@ export default function Login() {
         <h2 className="text-2xl font-bold mb-6 text-center text-black">
           Login to VoxSpace
         </h2>
+
+        {error && (
+          <div className="mb-4 text-red-500 text-sm text-center">{error}</div>
+        )}
 
         <div className="mb-4">
           <label className="block mb-1 text-sm font-medium text-black">Email</label>

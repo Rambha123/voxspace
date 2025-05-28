@@ -2,7 +2,6 @@ import { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 
-
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: "",
@@ -30,13 +29,15 @@ export default function Signup() {
     try {
       const response = await axios.post("http://localhost:6969/api/signup", formData);
 
-      if (response.status === 200 || response.status === 201) {
-        setSuccess("Signup successful! You can now login.");
-        setFormData({ name: "", email: "", password: "" });
-      } else {
-        setError("Signup failed. Please try again.");
+ 
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
       }
+
+      setSuccess("Signup successful! You can now login.");
+      setFormData({ name: "", email: "", password: "" });
     } catch (err) {
+      console.log("Signup error:", err);
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
@@ -47,23 +48,23 @@ export default function Signup() {
     }
   };
 
-const handleGoogleSuccess = async (credentialResponse) => {
-  try {
-    const response = await axios.post("http://localhost:6969/api/google-signup", {
-      credential: credentialResponse.credential // Send raw credential
-    });
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await axios.post("http://localhost:6969/api/google-signup", {
+        credential: credentialResponse.credential,
+      });
 
-    if (response.data.token) {
-      // Store token and handle user session
-      localStorage.setItem('token', response.data.token);
-      setSuccess("Google signup successful!");
-      // Optional: Redirect user
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        setSuccess("Google signup successful!");
+        setError("");
+        setFormData({ name: "", email: "", password: "" });
+        // Optionally redirect user or fetch user info here
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Google signup failed");
     }
-  } catch (err) {
-    setError(err.response?.data?.message || "Google signup failed");
-  }
-};
-
+  };
 
   const handleGoogleError = () => {
     setError("Google Sign In failed. Please try again.");
@@ -133,24 +134,22 @@ const handleGoogleSuccess = async (credentialResponse) => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
-  <div className="flex-1">
-    <GoogleLogin
-      onSuccess={handleGoogleSuccess}
-      onError={handleGoogleError}
-      size="large"
-      width="100%" 
-    />
-  </div>
-  <button
-    type="submit"
-    disabled={loading}
-    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
-  >
-    {loading ? "Signing Up..." : "Sign Up"}
-  </button>
-</div>
-
-       
+          <div className="flex-1">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              size="large"
+              width="100%"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
+          >
+            {loading ? "Signing Up..." : "Sign Up"}
+          </button>
+        </div>
       </form>
     </div>
   );
