@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 
+
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: "",
@@ -20,33 +21,35 @@ export default function Signup() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
+     const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setSuccess("");
 
-    try {
-      const response = await axios.post("http://localhost:6969/api/signup", formData);
+  try {
+    const response = await axios.post("http://localhost:6969/api/signup", formData);
 
- 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-      }
-
-      setSuccess("Signup successful! You can now login.");
+    // Assuming backend sends a message like this:
+    if (response.data.message) {
+      setSuccess(response.data.message); // "Verification email sent!"
       setFormData({ name: "", email: "", password: "" });
-    } catch (err) {
-      console.log("Signup error:", err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Network error: " + err.message);
-      }
-    } finally {
-      setLoading(false);
+    } else {
+      setError("Unexpected response from server.");
     }
-  };
+  } catch (err) {
+    console.log("Signup error:", err);
+    if (err.response?.data?.message) {
+      setError(err.response.data.message);
+    } else {
+      setError("Network error: " + err.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
