@@ -138,7 +138,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
       onSuccess={handleGoogleSuccess}
       onError={handleGoogleError}
       size="large"
-      width="100%" 
+    
     />
   </div>
   <button

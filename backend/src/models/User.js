@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true // Allows nulls for non-Google users
-  }
+  },
+   verified: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);

@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyEmail from './components/VerifyEmail';
 
 function App() {
  
@@ -16,6 +17,8 @@ function App() {
             
           <Route path="/login" element={<Login></Login>}></Route>
           <Route path="/signup" element={<Signup></Signup>}></Route>
+          <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>
+
 
       </Routes>
 

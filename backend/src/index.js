@@ -30,3 +30,8 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => {
     console.error('Failed to connect to MongoDB:', err);
   });
+
+  app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
