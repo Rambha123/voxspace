@@ -1,16 +1,39 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-export default function Login() {
+const Login = (props )=> {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
-    // TODO: Handle response, store JWT, redirect
+    setError(null);
+
+    try {
+      const res = await axios.post("http://localhost:6969/api/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = res.data;
+
+      if (!user.isVerified) {
+        setError("Please verify your email before logging in.");
+        return;
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      props.setIsLoggedIn(true); // Notify parent component
+      navigate("/"); // Redirect to home
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+    }
   };
 
   const handleSignup = () => {
@@ -31,8 +54,14 @@ export default function Login() {
           Login to VoxSpace
         </h2>
 
+        {error && (
+          <div className="mb-4 text-red-500 text-sm text-center">{error}</div>
+        )}
+
         <div className="mb-4">
-          <label className="block mb-1 text-sm font-medium text-black">Email</label>
+          <label className="block mb-1 text-sm font-medium text-black">
+            Email
+          </label>
           <input
             type="email"
             value={email}
@@ -43,7 +72,9 @@ export default function Login() {
         </div>
 
         <div className="mb-6">
-          <label className="block mb-1 text-sm font-medium text-black">Password</label>
+          <label className="block mb-1 text-sm font-medium text-black">
+            Password
+          </label>
           <input
             type="password"
             value={password}
@@ -74,3 +105,4 @@ export default function Login() {
     </div>
   );
 }
+export default Login;

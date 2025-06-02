@@ -21,49 +21,53 @@ export default function Signup() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess("");
+     const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setSuccess("");
 
-    try {
-      const response = await axios.post("http://localhost:6969/api/signup", formData);
-
-      if (response.status === 200 || response.status === 201) {
-        setSuccess("Signup successful! You can now login.");
-        setFormData({ name: "", email: "", password: "" });
-      } else {
-        setError("Signup failed. Please try again.");
-      }
-    } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Network error: " + err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-const handleGoogleSuccess = async (credentialResponse) => {
   try {
-    const response = await axios.post("http://localhost:6969/api/google-signup", {
-      credential: credentialResponse.credential // Send raw credential
-    });
+    const response = await axios.post("http://localhost:6969/api/signup", formData);
 
-    if (response.data.token) {
-      // Store token and handle user session
-      localStorage.setItem('token', response.data.token);
-      setSuccess("Google signup successful!");
-      // Optional: Redirect user
+    // Assuming backend sends a message like this:
+    if (response.data.message) {
+      setSuccess(response.data.message); // "Verification email sent!"
+      setFormData({ name: "", email: "", password: "" });
+    } else {
+      setError("Unexpected response from server.");
     }
   } catch (err) {
-    setError(err.response?.data?.message || "Google signup failed");
+    console.log("Signup error:", err);
+    if (err.response?.data?.message) {
+      setError(err.response.data.message);
+    } else {
+      setError("Network error: " + err.message);
+    }
+  } finally {
+    setLoading(false);
   }
 };
 
+
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const response = await axios.post("http://localhost:6969/api/google-signup", {
+        credential: credentialResponse.credential,
+      });
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        setSuccess("Google signup successful!");
+        setError("");
+        setFormData({ name: "", email: "", password: "" });
+        // Optionally redirect user or fetch user info here
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Google signup failed");
+    }
+  };
 
   const handleGoogleError = () => {
     setError("Google Sign In failed. Please try again.");
@@ -133,24 +137,22 @@ const handleGoogleSuccess = async (credentialResponse) => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
-  <div className="flex-1">
-    <GoogleLogin
-      onSuccess={handleGoogleSuccess}
-      onError={handleGoogleError}
-      size="large"
-    
-    />
-  </div>
-  <button
-    type="submit"
-    disabled={loading}
-    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
-  >
-    {loading ? "Signing Up..." : "Sign Up"}
-  </button>
-</div>
-
-       
+          <div className="flex-1">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              size="large"
+              width="100%"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-xl transition duration-200 disabled:opacity-50"
+          >
+            {loading ? "Signing Up..." : "Sign Up"}
+          </button>
+        </div>
       </form>
     </div>
   );
