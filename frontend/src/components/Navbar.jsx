@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoo from '../assets/logoo.png';
 
-export default function Navbar({ isLoggedin, setIsLoggedIn }) {//isLoggedIn, handleLogout
+export default function Navbar({ isLoggedin, setIsLoggedIn }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
      
@@ -14,19 +14,22 @@ export default function Navbar({ isLoggedin, setIsLoggedIn }) {//isLoggedIn, han
 
 };
 
+
   return (
     <nav style={{ backgroundColor: "rgb(28, 37, 50)" }} className="shadow-lg px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <a href="/" className="flex items-center space-x-3">
-          <img src={logoo} className="h-14" alt="Logo" />
+          <div >
+           <img src={logoo} className="h-14" alt="Logo" />
           <span className="text-2xl font-semibold text-white">Voxspace</span>
-        </a>
+
+          </div>
+       
 
         <ul className="hidden md:flex space-x-6 text-white font-medium">
           {isLoggedin ? (
             <>
-              <li><a href="#" className="hover:text-green-500">Home</a></li>
-              <li><a href="#" className="hover:text-green-500">Events</a></li>
+              <li><button className="hover:text-green-500">Home</button></li>
+              <li><button className="hover:text-green-500">Events</button></li>
               <li><a href="#" className="hover:text-green-500">Messages</a></li>
               <li><a href="#" className="hover:text-green-500">Calendar</a></li>
               <li><button onClick={handleLogout} className="hover:text-red-500">Logout</button></li>

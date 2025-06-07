@@ -15,7 +15,7 @@ const Profile = () => {
     const fetchProfile = async () => {
 
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:6969/api/users/me', {
+        const res = await axios.get('http://localhost:6969/api/me', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
@@ -47,7 +47,7 @@ const Profile = () => {
       if (form.password) updatePayload.password = form.password;
 
       const res = await axios.put(
-        'http://localhost:6969/api/users/me',
+        'http://localhost:6969/api/me',
         updatePayload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -72,7 +72,20 @@ const Profile = () => {
   return (
     <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
       <h2 className="text-2xl font-bold mb-4 text-center">Your Profile</h2>
-
+      <div className="mt-6 text-center">
+        <img
+          src={
+            user.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`
+          }
+          alt="Avatar"
+          className="mx-auto rounded-full w-24 h-24"
+        />
+        <p className="mt-2 text-sm">
+          <strong>Role:</strong> {user.role} <br />
+          <strong>Verified:</strong> {user.isVerified ? 'Yes' : 'No'}
+        </p>
+      </div>
       {message.text && (
         <div
           className={`mb-4 p-3 rounded ${
@@ -141,20 +154,7 @@ const Profile = () => {
         </button>
       </form>
 
-      <div className="mt-6 text-center">
-        <img
-          src={
-            user.avatar ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`
-          }
-          alt="Avatar"
-          className="mx-auto rounded-full w-24 h-24"
-        />
-        <p className="mt-2 text-sm">
-          <strong>Role:</strong> {user.role} <br />
-          <strong>Verified:</strong> {user.verified ? 'Yes' : 'No'}
-        </p>
-      </div>
+      
     </div>
   );
 };

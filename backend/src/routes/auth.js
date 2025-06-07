@@ -102,9 +102,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Login has failed', error: err.message });
   }
 });
-
-
-//googel
+//google
 router.post('/google-signup', async (req, res) => {
   const { credential } = req.body;
 
@@ -129,12 +127,12 @@ router.post('/google-signup', async (req, res) => {
         name: payload.name,
         email: payload.email,
         googleId: payload.sub,
-        verified: true, // Assume Google-authenticated users are verified
+        isVerified: true, 
       });
       await user.save();
     } else if (!user.googleId) {
       user.googleId = payload.sub;
-      user.verified = true;
+      user.isVerified = true;
       await user.save();
     }
 
@@ -149,10 +147,11 @@ router.post('/google-signup', async (req, res) => {
   } catch (err) {
     console.error('Google auth error:', err);
     res.status(400).json({
-      message: 'Google authentication failed',
+      message: 'google auth failed',
       error: err.message,
     });
   }
 });
+
 
 export default router;

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js'; 
+import profileRoutes from './routes/profile.js';
 
 
 dotenv.config();
@@ -14,7 +15,7 @@ app.use(express.json());
 
 // ✅ Use your routes with a base path
 app.use('/api', authRoutes);
-
+app.use('/api', profileRoutes);
 // Default test route
 app.get('/', (req, res) => {
   res.send('Hello from backend!');
