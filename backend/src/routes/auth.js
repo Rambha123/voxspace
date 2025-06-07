@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import nodemailer from 'nodemailer';
 import User from '../models/User.js';
-import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 const router = express.Router();

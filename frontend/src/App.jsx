@@ -1,10 +1,10 @@
-
 import Navbar from './components/Navbar'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import VerifyEmail from './components/Verifyemail';
 import React, { useEffect, useState } from 'react';
+import Profile from './pages/Profile';
 
 
 
@@ -42,9 +42,10 @@ function App() {
       <Navbar isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn}  ></Navbar>
      
       <Routes>
-            
           <Route path="/login" element={<Login isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn}/>} />
           <Route path="/signup" element={<Signup></Signup>}></Route>
+          <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>   
+          <Route path="/profile" element={<Profile></Profile>}></Route>     
 
       </Routes>
 
