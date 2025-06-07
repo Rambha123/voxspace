@@ -30,9 +30,9 @@ export default function Signup() {
   try {
     const response = await axios.post("http://localhost:6969/api/signup", formData);
 
-    // Assuming backend sends a message like this:
+    
     if (response.data.message) {
-      setSuccess(response.data.message); // "Verification email sent!"
+      setSuccess(response.data.message); 
       setFormData({ name: "", email: "", password: "" });
     } else {
       setError("Unexpected response from server.");
@@ -62,7 +62,7 @@ export default function Signup() {
         setSuccess("Google signup successful!");
         setError("");
         setFormData({ name: "", email: "", password: "" });
-        // Optionally redirect user or fetch user info here
+       
       }
     } catch (err) {
       setError(err.response?.data?.message || "Google signup failed");
@@ -137,11 +137,11 @@ export default function Signup() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 ">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleError}
-              size="large"
+              size="medium"
               width="100%"
             />
           </div>

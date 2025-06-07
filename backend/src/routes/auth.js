@@ -134,9 +134,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error during login' });
   }
 });
-
-
-//googel
+//google
 router.post('/google-signup', async (req, res) => {
   const { credential } = req.body;
 
@@ -146,13 +144,14 @@ router.post('/google-signup', async (req, res) => {
       idToken: credential,
       audience: CLIENT_ID,
     });
+
     const payload = ticket.getPayload();
 
     let user = await User.findOne({
       $or: [
         { email: payload.email },
-        { googleId: payload.sub }
-      ]
+        { googleId: payload.sub },
+      ],
     });
 
     if (!user) {
@@ -160,10 +159,12 @@ router.post('/google-signup', async (req, res) => {
         name: payload.name,
         email: payload.email,
         googleId: payload.sub,
+        isVerified: true, 
       });
       await user.save();
     } else if (!user.googleId) {
       user.googleId = payload.sub;
+      user.isVerified = true;
       await user.save();
     }
 
@@ -172,16 +173,17 @@ router.post('/google-signup', async (req, res) => {
     res.status(200).json({
       message: 'Google authentication successful',
       token,
-      user: { name: user.name, email: user.email }
+      user: { name: user.name, email: user.email },
     });
 
   } catch (err) {
     console.error('Google auth error:', err);
     res.status(400).json({
-      message: 'Google authentication failed',
-      error: err.message
+      message: 'google auth failed',
+      error: err.message,
     });
   }
 });
+
 
 export default router;
