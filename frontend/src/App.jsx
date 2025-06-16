@@ -40,15 +40,15 @@ function App() {
   return (
    <div>
     <Router>
-      <Navbar isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn}  ></Navbar>
+      <Navbar isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn} ></Navbar>
      
       <Routes>
           <Route path="/" element={<Home isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
           <Route path="/login" element={<Login isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn}/>} />
           <Route path="/signup" element={<Signup></Signup>}></Route>
-          <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>   
-          <Route path="/profile" element={<Profile></Profile>}></Route>     
-
+          <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>  
+          <Route path="/profile" element={<Profile></Profile>}></Route>       
+          
       </Routes>
 
   
