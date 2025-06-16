@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
-const navigate= useNavigate;
+const API_URL = 'http://localhost:6969'; // Change to your actual API base URL
 
 const Home = ({ isLoggedin }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -10,33 +11,65 @@ const Home = ({ isLoggedin }) => {
 
   const [spaceName, setSpaceName] = useState('');
   const [joinCode, setJoinCode] = useState('');
+  const [spaces, setSpaces] = useState([]);
 
-  const [spaces, setSpaces] = useState([]); // Mock space
+  const navigate = useNavigate();
 
-  //const navigate = useNavigate();
-
-  const handleCreateSpace = () => {
-    if (spaceName.trim() === "") return;
-    const newSpace = {
-      id: Date.now(),
-      name: spaceName,
-      code: Math.random().toString(36).substring(2, 8).toUpperCase()
-    };
-    setSpaces(prev => [...prev, newSpace]);
-    setShowCreateModal(false);
-    setSpaceName('');
+  const fetchSpaces = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await axios.get(`${API_URL}/api/spaces/my-spaces`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSpaces(res.data);
+    } catch (err) {
+      console.error("Error fetching spaces", err);
+    }
   };
 
-  const handleJoinSpace = () => {
+  useEffect(() => {
+    if (isLoggedin) {
+      fetchSpaces();
+    }
+  }, [isLoggedin]);
+
+  const handleCreateSpace = async () => {
+    if (spaceName.trim() === "") return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await axios.post(`${API_URL}/api/spaces/create`, 
+        { name: spaceName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSpaces(prev => [...prev, res.data]);
+      setShowCreateModal(false);
+      setSpaceName('');
+    } catch (err) {
+      console.error("Error creating space", err);
+      alert(err.response?.data?.message || "Failed to create space");
+    }
+  };
+
+  const handleJoinSpace = async () => {
     if (joinCode.trim() === "") return;
-    const joinedSpace = {
-      id: Date.now(),
-      name: `Joined ${joinCode}`,
-      code: joinCode.toUpperCase()
-    };
-    setSpaces(prev => [...prev, joinedSpace]);
-    setShowJoinModal(false);
-    setJoinCode('');
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await axios.post(`${API_URL}/api/spaces/join`, 
+        { code: joinCode.toUpperCase() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSpaces(prev => [...prev, res.data]);
+      setShowJoinModal(false);
+      setJoinCode('');
+    } catch (err) {
+      console.error("Error joining space", err);
+      alert(err.response?.data?.message || "Failed to join space");
+    }
   };
 
   return (
@@ -83,7 +116,6 @@ const Home = ({ isLoggedin }) => {
             </div>
           ) : (
             <div className="w-full ">
-              {/* Top action buttons */}
               <div className="flex justify-end gap-2 mb-6">
                 <button
                   onClick={() => setShowCreateModal(true)}
@@ -99,16 +131,15 @@ const Home = ({ isLoggedin }) => {
                 </button>
               </div>
 
-              {/* Space cards grid */}
               {spaces.length === 0 ? (
                 <p className="text-center text-lg text-gray-300">No spaces yet!</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {spaces.map(space => (
                     <div
-                      key={space.id}
+                      key={space._id}
                       className="bg-[rgb(58,80,107)] rounded-xl p-4 shadow-lg cursor-pointer hover:bg-[rgb(68,90,117)] transition"
-                      onClick={() => navigate(`/space/${space.id}`)} // You can change route
+                      onClick={() => navigate(`/space/${space._id}`)}
                     >
                       <h3 className="text-lg font-semibold mb-2">{space.name}</h3>
                       <p className="text-sm text-gray-300 mb-2">Code: {space.code}</p>
@@ -124,7 +155,6 @@ const Home = ({ isLoggedin }) => {
         </main>
       </div>
 
-      {/* Create Space Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
           <div className="bg-white p-6 rounded-lg w-96">
@@ -144,7 +174,6 @@ const Home = ({ isLoggedin }) => {
         </div>
       )}
 
-      {/* Join Space Modal */}
       {showJoinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
           <div className="bg-white p-6 rounded-lg w-96">
