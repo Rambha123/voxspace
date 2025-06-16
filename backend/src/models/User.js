@@ -1,3 +1,4 @@
+// models/User.js
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -12,12 +13,39 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true
   },
+  experiences: [
+  {
+    title: { type: String, required: true },
+    company: { type: String },
+    currentlyWorking: { type: Boolean, default: false }
+  }
+  ],
   password: {
     type: String,
-    required: true
+    required: function () {
+      return !this.googleId; // Only required if not signing up with Google
+    }
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allows it to be null for local users
+  },
+  isVerified: {
+    type: Boolean,
+    default: false // Use with Nodemailer to track email verification
+  },
+  avatar: {
+    type: String,
+    default: '' // Optional profile image
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
-}, { timestamps: true });
+}, {
+  timestamps: true
+});
 
-const User = mongoose.model('User', userSchema);
-
-export default User;
+export default mongoose.model('User', userSchema);
