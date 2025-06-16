@@ -13,6 +13,13 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true
   },
+  experiences: [
+  {
+    title: { type: String, required: true },
+    company: { type: String },
+    currentlyWorking: { type: Boolean, default: false }
+  }
+  ],
   password: {
     type: String,
     required: function () {

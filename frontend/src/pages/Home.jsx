@@ -9,18 +9,32 @@ const Home = ({ isLoggedin }) => {
   const [spaceName, setSpaceName] = useState('');
   const [joinCode, setJoinCode] = useState('');
 
+  const [spaces, setSpaces] = useState([]); // Mock spaces
+
   const navigate = useNavigate();
 
   const handleCreateSpace = () => {
-    console.log("Creating space:", spaceName);
-    // TODO: Call backend API here
+    if (spaceName.trim() === "") return;
+    const newSpace = {
+      id: Date.now(),
+      name: spaceName,
+      code: Math.random().toString(36).substring(2, 8).toUpperCase()
+    };
+    setSpaces(prev => [...prev, newSpace]);
     setShowCreateModal(false);
+    setSpaceName('');
   };
 
   const handleJoinSpace = () => {
-    console.log("Joining space with code:", joinCode);
-    // TODO: Call backend API here
+    if (joinCode.trim() === "") return;
+    const joinedSpace = {
+      id: Date.now(),
+      name: `Joined ${joinCode}`,
+      code: joinCode.toUpperCase()
+    };
+    setSpaces(prev => [...prev, joinedSpace]);
     setShowJoinModal(false);
+    setJoinCode('');
   };
 
   return (
@@ -43,7 +57,7 @@ const Home = ({ isLoggedin }) => {
         ></div>
       )}
 
-      <div className={`flex flex-col flex-grow ${isLoggedin ? 'lg:ml-64' : ''}`}>
+      <div className={`flex flex-col flex-grow ${isLoggedin ? 'lg:ml-7' : ''}`}>
         {isLoggedin && (
           <header className="flex items-center justify-between p-4 bg-[rgb(28,37,65)] text-white lg:hidden">
             <button
@@ -51,18 +65,8 @@ const Home = ({ isLoggedin }) => {
               aria-label="Open sidebar"
               className="focus:outline-none"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                ></path>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
               </svg>
             </button>
             <h1 className="text-lg font-semibold">Home</h1>
@@ -70,27 +74,49 @@ const Home = ({ isLoggedin }) => {
           </header>
         )}
 
-        {/* Main Content */}
-        <main className="flex-grow flex flex-col items-center justify-center text-white text-xl font-medium bg-[rgb(28,37,65)]">
+        <main className="flex-grow flex flex-col items-center text-white bg-[rgb(28,37,65)] p-4">
           {!isLoggedin ? (
-            'Log in to see spaces'
+            <div className="flex-grow flex items-center justify-center text-xl font-medium">
+              Log in to see spaces
+            </div>
           ) : (
-            <div className="flex flex-col items-center gap-6">
-              <p>No spaces yet!!!</p>
-              <div className="flex gap-4">
+            <div className="w-full ">
+              {/* Top action buttons */}
+              <div className="flex justify-end gap-2 mb-6">
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-500 rounded-xl"
+                  className="px-4 py-1 text-sm bg-green-600 hover:bg-green-500 rounded"
                 >
                   Create Space
                 </button>
                 <button
                   onClick={() => setShowJoinModal(true)}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl"
+                  className="px-4 py-1 text-sm bg-blue-600 hover:bg-blue-500 rounded"
                 >
                   Join Space
                 </button>
               </div>
+
+              {/* Space cards grid */}
+              {spaces.length === 0 ? (
+                <p className="text-center text-lg text-gray-300">No spaces yet!</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {spaces.map(space => (
+                    <div
+                      key={space.id}
+                      className="bg-[rgb(58,80,107)] rounded-xl p-4 shadow-lg cursor-pointer hover:bg-[rgb(68,90,117)] transition"
+                      onClick={() => navigate(`/space/${space.id}`)} // You can change route
+                    >
+                      <h3 className="text-lg font-semibold mb-2">{space.name}</h3>
+                      <p className="text-sm text-gray-300 mb-2">Code: {space.code}</p>
+                      <button className="mt-auto px-3 py-1 text-sm bg-green-600 hover:bg-green-500 rounded">
+                        Open
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </main>
