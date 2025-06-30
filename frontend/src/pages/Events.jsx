@@ -1,33 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const EventsPage = () => {
-  const [events, setEvents] = useState([
-    { id: 1, title: 'Team Meeting', date: '2025-07-01' },
-    { id: 2, title: 'Workshop', date: '2025-07-05' },
-  ]);
+  const [events, setEvents] = useState([]);
+  const [form, setForm] = useState({ title: '', date: '', time: '', description: '' });
 
-  const [form, setForm] = useState({ title: '', date: '' });
+  const fetchEvents = async () => {
+    try {
+      const res = await axios.get('http://localhost:6969/api/events');
+      setEvents(res.data);
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleAddEvent = (e) => {
-    e.preventDefault();
-    if (form.title && form.date) {
-      const newEvent = {
-        id: events.length + 1,
-        title: form.title,
-        date: form.date,
-      };
-      setEvents([...events, newEvent]);
-      setForm({ title: '', date: '' });
-    }
-  };
+ const handleAddEvent = async (e) => {
+  e.preventDefault();
+
+  const today = new Date().toISOString().split("T")[0];
+  if (form.date < today) {
+    alert("Cannot create an event in the past.");
+    return;
+  }
+
+  try {
+    const res = await axios.post('http://localhost:6969/api/events', form);
+    setEvents([...events, res.data]);
+    setForm({ title: '', date: '', time: '', description: '' });
+  } catch (err) {
+    console.error('Failed to add event:', err);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-center">📅 Events </h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">📅 Events</h1>
 
       {/* Available Events */}
       <div className="mb-8">
@@ -35,11 +50,14 @@ const EventsPage = () => {
         <ul className="space-y-3">
           {events.map((event) => (
             <li
-              key={event.id}
-              className="p-4 bg-white shadow rounded-lg flex justify-between"
+              key={event._id}
+              className="p-4 bg-white shadow rounded-lg"
             >
-              <span>{event.title}</span>
-              <span className="text-gray-500">{event.date}</span>
+              <div className="font-semibold">{event.title}</div>
+              <div className="text-sm text-gray-500">{event.date} at {event.time}</div>
+              {event.description && (
+                <div className="mt-1 text-sm text-gray-600">{event.description}</div>
+              )}
             </li>
           ))}
         </ul>
@@ -66,6 +84,21 @@ const EventsPage = () => {
             className="w-full p-2 border rounded"
             required
           />
+          <input
+            type="time"
+            name="time"
+            value={form.time}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+          />
+          <textarea
+            name="description"
+            placeholder="Description"
+            value={form.description}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            rows="3"
+          ></textarea>
           <button
             type="submit"
             className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded"
