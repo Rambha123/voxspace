@@ -4,7 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js'; 
 import profileRoutes from './routes/profile.js';
-import spaceRoutes from './routes/spaceroute.js'
+import spaceRoutes from './routes/spaceroute.js';
+import eventRoutes from './routes/events.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api/spaces', spaceRoutes);
+app.use('/api/events', eventRoutes);
 
 // Default test route
 app.get('/', (req, res) => {
@@ -33,3 +35,8 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => {
     console.error('Failed to connect to MongoDB:', err);
   });
+
+  app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
