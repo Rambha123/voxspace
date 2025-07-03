@@ -17,8 +17,10 @@ app.use(express.json());
 // ✅ Use your routes with a base path
 app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
+app.use('/api/events', eventRoutes);
 app.use('/api/spaces', spaceRoutes);
 app.use('/api/events', eventRoutes);
+
 
 // Default test route
 app.get('/', (req, res) => {

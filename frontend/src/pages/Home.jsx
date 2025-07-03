@@ -14,6 +14,7 @@ const Home = ({ isLoggedin }) => {
   const [spaceName, setSpaceName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [spaces, setSpaces] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
 
   const navigate = useNavigate();
 
@@ -30,9 +31,25 @@ const Home = ({ isLoggedin }) => {
     }
   };
 
+  const fetchCalendarEvents = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/events`);
+      const events = res.data.map(evt => ({
+        title: evt.title,
+        // If you want to include time, use this format:
+        // date: evt.time ? `${evt.date}T${evt.time}` : evt.date,
+        date: evt.date,
+      }));
+      setCalendarEvents(events);
+    } catch (err) {
+      console.error("Error fetching events for calendar", err);
+    }
+  };
+
   useEffect(() => {
     if (isLoggedin) {
       fetchSpaces();
+      fetchCalendarEvents();
     }
   }, [isLoggedin]);
 
@@ -88,26 +105,25 @@ const Home = ({ isLoggedin }) => {
               plugins={[dayGridPlugin]}
               initialView="dayGridMonth"
               height="400px"
-              events={[
-                { title: 'Launch Meeting', date: '2025-07-01' },
-                { title: 'Team Call', date: '2025-07-04' },
-              ]}
+
+              events={calendarEvents}  
             />
           </div>
-         <div className="flex justify-between gap-4 m-5">
-        <button
-        onClick={() => navigate("/events")}
-        className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
-        >
-        Create Event
-        </button>
-        <button
-        onClick={() => navigate("/events")}
-        className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
-        >
-        View Event
-        </button>
-</div>
+          <div className="flex justify-between gap-4 m-5">
+            <button
+              onClick={() => navigate("/events")}
+              className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
+            >
+              Create Event
+            </button>
+            <button
+              onClick={() => navigate("/events")}
+              className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
+            >
+              View Event
+            </button>
+          </div>
+
         </aside>
       )}
 
