@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:6969'; // Change to your actual API base URL
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+
+const API_URL = 'http://localhost:6969';
 
 const Home = ({ isLoggedin }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-
   const [spaceName, setSpaceName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [spaces, setSpaces] = useState([]);
+  const [calendarEvents, setCalendarEvents] = useState([]);
 
   const navigate = useNavigate();
 
@@ -28,9 +31,25 @@ const Home = ({ isLoggedin }) => {
     }
   };
 
+  const fetchCalendarEvents = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/events`);
+      const events = res.data.map(evt => ({
+        title: evt.title,
+        // If you want to include time, use this format:
+        // date: evt.time ? `${evt.date}T${evt.time}` : evt.date,
+        date: evt.date,
+      }));
+      setCalendarEvents(events);
+    } catch (err) {
+      console.error("Error fetching events for calendar", err);
+    }
+  };
+
   useEffect(() => {
     if (isLoggedin) {
       fetchSpaces();
+      fetchCalendarEvents();
     }
   }, [isLoggedin]);
 
@@ -76,12 +95,33 @@ const Home = ({ isLoggedin }) => {
     <div className="flex h-screen bg-[rgb(28,37,65)]">
       {isLoggedin && (
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-64 overflow-y-auto bg-[rgb(28,37,50)] p-6 text-white
+          className={`fixed inset-y-0 left-0 z-30 w-95 overflow-y-auto bg-[rgb(28,37,50)] p-4 text-white
             transform transition-transform duration-300 ease-in-out
             lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
-          <h2 className="text-xl font-semibold mb-4">Sidebar</h2>
-          Calendar
+          <h2 className="text-xl font-semibold mb-4">Calendar</h2>
+          <div className="bg-white text-black rounded-lg p-2">
+            <FullCalendar
+              plugins={[dayGridPlugin]}
+              initialView="dayGridMonth"
+              height="400px"
+              events={calendarEvents}  
+            />
+          </div>
+          <div className="flex justify-between gap-4 m-5">
+            <button
+              onClick={() => navigate("/events")}
+              className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
+            >
+              Create Event
+            </button>
+            <button
+              onClick={() => navigate("/events")}
+              className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-500 rounded-xl shadow transition duration-200"
+            >
+              View Event
+            </button>
+          </div>
         </aside>
       )}
 
@@ -115,7 +155,7 @@ const Home = ({ isLoggedin }) => {
               Log in to see spaces
             </div>
           ) : (
-            <div className="w-full ">
+            <div className="w-full">
               <div className="flex justify-end gap-2 mb-6">
                 <button
                   onClick={() => setShowCreateModal(true)}
