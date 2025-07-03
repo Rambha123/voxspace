@@ -105,6 +105,7 @@ const Home = ({ isLoggedin }) => {
               plugins={[dayGridPlugin]}
               initialView="dayGridMonth"
               height="400px"
+
               events={calendarEvents}  
             />
           </div>
@@ -122,6 +123,7 @@ const Home = ({ isLoggedin }) => {
               View Event
             </button>
           </div>
+
         </aside>
       )}
 
