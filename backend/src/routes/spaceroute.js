@@ -3,6 +3,8 @@ import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
 import Post from '../models/Post.js';
 import authMiddleware from '../middleware/authentication.js';
+import upload from '../middleware/upload.js'; // 🆕 multer middleware
+import fs from 'fs';
 
 const router = express.Router();
 
@@ -105,7 +107,9 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
       content: post.content,
       type: post.type,
       createdAt: post.createdAt,
-      authorName: post.authorName || post.authorId?.name || 'Unknown', // ✅ fallback to populated
+      authorName: post.authorName || post.authorId?.name || 'Unknown',
+      authorId: post.authorId?._id?.toString(),
+      imageUrl: post.imageUrl || null
     }));
 
     res.json(formatted);
@@ -115,9 +119,9 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
 });
 
 // ===========================
-// CREATE A POST IN A SPACE
+// CREATE A POST IN A SPACE (with optional image)
 // ===========================
-router.post('/:id/posts', authMiddleware, async (req, res) => {
+router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, res) => {
   const { content, type } = req.body;
 
   try {
@@ -131,13 +135,40 @@ router.post('/:id/posts', authMiddleware, async (req, res) => {
       content,
       type: type === 'event' ? 'event' : 'normal',
       authorId: req.user.id,
-      authorName: req.user.name, // Or req.user.email or any display name
+      authorName: req.user.name,
+      imageUrl: req.file ? req.file.path : null
     });
 
     await post.save();
     res.status(201).json(post);
   } catch (err) {
     res.status(400).json({ message: 'Failed to create post' });
+  }
+});
+
+// ===========================
+// DELETE A POST (only by author)
+// ===========================
+router.delete('/posts/:postId', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    if (post.authorId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not allowed to delete this post' });
+    }
+
+    // Optionally delete image from disk
+    if (post.imageUrl) {
+      fs.unlink(post.imageUrl, (err) => {
+        if (err) console.error("Failed to delete image:", err);
+      });
+    }
+
+    await Post.findByIdAndDelete(req.params.postId);
+    res.json({ message: 'Post deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete post' });
   }
 });
 

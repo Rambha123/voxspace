@@ -12,6 +12,11 @@ export default function Navbar({ isLoggedin, setIsLoggedIn }) {
     localStorage.removeItem('token'); 
     setIsLoggedIn(false); 
     navigate('/login'); 
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+
   };
 
   useEffect(() => {

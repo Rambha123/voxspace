@@ -20,6 +20,7 @@ app.use('/api', profileRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/spaces', spaceRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/uploads', express.static('uploads'));
 
 
 // Default test route

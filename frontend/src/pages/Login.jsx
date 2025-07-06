@@ -40,6 +40,9 @@ const Login = (props) => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userId", user._id);     // ✅ for delete check
+      localStorage.setItem("userName", user.name);  // ✅ for showing post author
+
 
       props.setIsLoggedIn(true);
       navigate("/");
@@ -63,6 +66,9 @@ const Login = (props) => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userId", user._id);     // ✅ for delete check
+      localStorage.setItem("userName", user.name);  // ✅ for showing post author
+
 
       props.setIsLoggedIn(true);
       navigate("/");
