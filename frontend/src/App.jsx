@@ -5,6 +5,7 @@ import Signup from './pages/Signup';
 import VerifyEmail from './components/Verifyemail';
 import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
+import SpacePage from './pages/SpacePage';
 
 import Profile from './pages/profile';
 
@@ -54,6 +55,8 @@ function App() {
           <Route path="/profile" element={<Profile isLoggedin={isLogedIn} />} />
 
           <Route path="/events" element={<Events isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
+          <Route path="/space/:id" element={<SpacePage />} />
+
       </Routes>
 
   
