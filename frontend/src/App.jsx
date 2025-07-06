@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import Profile from './pages/profile';
 import Events from './pages/Events';
+import SpacePage from './pages/SpacePage';
 
 
 
@@ -51,6 +52,7 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>         
           <Route path="/profile" element={<Profile isLoggedin={isLogedIn} />} />
           <Route path="/events" element={<Events isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
+          <Route path="/space/:id" element={<SpacePage />} />
       </Routes>
 
   

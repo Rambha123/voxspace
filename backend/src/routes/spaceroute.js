@@ -2,6 +2,7 @@ import express from 'express';
 import Space from '../models/Space.js';
 import { nanoid } from 'nanoid';  // for generating codes
 import authMiddleware from '../middleware/authentication.js';  // your JWT auth
+import Post from '../models/Post.js';
 
 const router = express.Router();
 
@@ -60,6 +61,89 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error fetching spaces" });
   }
 });
+
+
+
+// GET A SPECIFIC SPACE BY ID
+
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const space = await Space.findById(req.params.id);
+    if (!space) return res.status(404).json({ message: 'Space not found' });
+
+    if (!space.members.includes(req.user.id)) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    res.json(space);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get space' });
+  }
+});
+
+
+
+// GET POSTS IN A SPACE
+
+router.get('/:id/posts', authMiddleware, async (req, res) => {
+  try {
+    const space = await Space.findById(req.params.id);
+    if (!space || !space.members.includes(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    const posts = await Post.find({ space: req.params.id })
+      .sort({ createdAt: -1 })
+      .populate('authorId', 'name');
+
+    const formatted = posts.map(post => ({
+      _id: post._id,
+      content: post.content,
+      type: post.type,
+      createdAt: post.createdAt,
+      authorName: post.authorName || post.authorId?.name || 'Unknown', // ✅ fallback to populated
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch posts' });
+  }
+});
+
+//post 
+router.post('/:id/posts', authMiddleware, async (req, res) => {
+  const { content, type } = req.body;
+
+  try {
+    const space = await Space.findById(req.params.id);
+    if (!space || !space.members.includes(req.user.id)) {
+      return res.status(403).json({ message: 'Not authorized to post in this space' });
+    }
+
+    const post = new Post({
+      space: req.params.id,
+      content,
+      type: type === 'event' ? 'event' : 'normal',
+      authorId: req.user.id,
+      authorName: req.user.name,  // ✅ this ensures name is saved directly
+    });
+
+    await post.save();
+
+    res.status(201).json({
+      _id: post._id,
+      content: post.content,
+      type: post.type,
+      createdAt: post.createdAt,
+      authorName: post.authorName,
+    });
+  } catch (err) {
+    console.error("Failed to create post:", err);
+    res.status(400).json({ message: 'Failed to create post' });
+  }
+});
+
+
 
 
 
