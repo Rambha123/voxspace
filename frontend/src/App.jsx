@@ -1,4 +1,3 @@
-
 import Navbar from './components/Navbar'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
@@ -6,7 +5,10 @@ import Signup from './pages/Signup';
 import VerifyEmail from './components/Verifyemail';
 import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
+import SpacePage from './pages/SpacePage';
+
 import Profile from './pages/profile';
+
 import Events from './pages/Events';
 import SpacePage from './pages/SpacePage';
 
@@ -49,10 +51,13 @@ function App() {
           <Route path="/" element={<Home isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
           <Route path="/login" element={<Login isLoggedin ={isLogedIn} setIsLoggedIn={setisLogedIn}/>} />
           <Route path="/signup" element={<Signup></Signup>}></Route>
+
           <Route path="/verify-email" element={<VerifyEmail></VerifyEmail>}></Route>         
           <Route path="/profile" element={<Profile isLoggedin={isLogedIn} />} />
+
           <Route path="/events" element={<Events isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
           <Route path="/space/:id" element={<SpacePage />} />
+
       </Routes>
 
   

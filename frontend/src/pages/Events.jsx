@@ -159,6 +159,7 @@ const fetchSpaces = async () => {
             </button>
           </form>
         </div>
+
       </div>
     </div>
   );

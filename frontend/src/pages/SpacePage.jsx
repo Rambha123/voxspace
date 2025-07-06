@@ -11,6 +11,7 @@ const SpacePage = () => {
   const [newPost, setNewPost] = useState('');
   const [isEvent, setIsEvent] = useState(false);
 
+
   const fetchSpace = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -22,6 +23,7 @@ const SpacePage = () => {
       console.error("Failed to fetch space", err);
     }
   };
+
 
   const fetchPosts = async () => {
     try {
@@ -39,6 +41,7 @@ const SpacePage = () => {
     fetchSpace();
     fetchPosts();
   }, [id]);
+
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
@@ -60,6 +63,7 @@ const SpacePage = () => {
       console.error("Failed to create post", err);
     }
   };
+
 
   if (!space) {
     return <div className="p-4 text-center text-white bg-[#1c2541] min-h-screen">Loading space...</div>;
@@ -121,6 +125,7 @@ const SpacePage = () => {
             ))
           )}
         </div>
+
       </div>
     </div>
   );

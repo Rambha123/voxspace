@@ -1,12 +1,17 @@
 import express from 'express';
+import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
+
 import { nanoid } from 'nanoid';  // for generating codes
 import authMiddleware from '../middleware/authentication.js';  // your JWT auth
 import Post from '../models/Post.js';
 
+
 const router = express.Router();
 
-// Create space
+// ===========================
+// CREATE A NEW SPACE
+// ===========================
 router.post('/create', authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ message: "Name is required" });
@@ -28,7 +33,9 @@ router.post('/create', authMiddleware, async (req, res) => {
   }
 });
 
-// Join space
+// ===========================
+// JOIN A SPACE BY CODE
+// ===========================
 router.post('/join', authMiddleware, async (req, res) => {
   const { code } = req.body;
 
@@ -52,7 +59,9 @@ router.post('/join', authMiddleware, async (req, res) => {
   }
 });
 
-// Get my spaces
+// ===========================
+// GET LOGGED-IN USER'S SPACES
+// ===========================
 router.get('/my-spaces', authMiddleware, async (req, res) => {
   try {
     const spaces = await Space.find({ members: req.user.id });
@@ -61,6 +70,7 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error fetching spaces" });
   }
 });
+
 
 
 
@@ -83,7 +93,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 
 
+
 // GET POSTS IN A SPACE
+
 
 router.get('/:id/posts', authMiddleware, async (req, res) => {
   try {
@@ -110,7 +122,9 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
   }
 });
 
+
 //post 
+
 router.post('/:id/posts', authMiddleware, async (req, res) => {
   const { content, type } = req.body;
 
@@ -125,6 +139,7 @@ router.post('/:id/posts', authMiddleware, async (req, res) => {
       content,
       type: type === 'event' ? 'event' : 'normal',
       authorId: req.user.id,
+rambha
       authorName: req.user.name,  // ✅ this ensures name is saved directly
     });
 
@@ -139,12 +154,10 @@ router.post('/:id/posts', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("Failed to create post:", err);
+
     res.status(400).json({ message: 'Failed to create post' });
   }
 });
-
-
-
 
 
 export default router;
