@@ -22,6 +22,7 @@ app.use('/api/spaces', spaceRoutes);
 app.use('/api/events', eventRoutes);
 
 
+
 // Default test route
 app.get('/', (req, res) => {
   res.send('Hello from backend!');

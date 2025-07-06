@@ -1,8 +1,11 @@
 import express from 'express';
 import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
+
+import { nanoid } from 'nanoid';  // for generating codes
+import authMiddleware from '../middleware/authentication.js';  // your JWT auth
 import Post from '../models/Post.js';
-import authMiddleware from '../middleware/authentication.js';
+
 
 const router = express.Router();
 
@@ -68,9 +71,11 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
+
+
+
 // GET A SPECIFIC SPACE BY ID
-// ===========================
+
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
@@ -86,9 +91,12 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
+
+
+
 // GET POSTS IN A SPACE
-// ===========================
+
+
 router.get('/:id/posts', authMiddleware, async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
@@ -114,9 +122,9 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
-// CREATE A POST IN A SPACE
-// ===========================
+
+//post 
+
 router.post('/:id/posts', authMiddleware, async (req, res) => {
   const { content, type } = req.body;
 
@@ -131,14 +139,25 @@ router.post('/:id/posts', authMiddleware, async (req, res) => {
       content,
       type: type === 'event' ? 'event' : 'normal',
       authorId: req.user.id,
-      authorName: req.user.name, // Or req.user.email or any display name
+rambha
+      authorName: req.user.name,  // ✅ this ensures name is saved directly
     });
 
     await post.save();
-    res.status(201).json(post);
+
+    res.status(201).json({
+      _id: post._id,
+      content: post.content,
+      type: post.type,
+      createdAt: post.createdAt,
+      authorName: post.authorName,
+    });
   } catch (err) {
+    console.error("Failed to create post:", err);
+
     res.status(400).json({ message: 'Failed to create post' });
   }
 });
+
 
 export default router;

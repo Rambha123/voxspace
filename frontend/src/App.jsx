@@ -10,6 +10,7 @@ import SpacePage from './pages/SpacePage';
 import Profile from './pages/profile';
 
 import Events from './pages/Events';
+import SpacePage from './pages/SpacePage';
 
 
 
