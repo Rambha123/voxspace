@@ -1,6 +1,5 @@
-
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
@@ -17,6 +16,7 @@ const SpacePage = () => {
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
+  const chatEndRef = useRef(null);
 
   const currentUser = {
     _id: localStorage.getItem("userId"),
@@ -28,15 +28,35 @@ const SpacePage = () => {
     fetchPosts();
 
     socket.emit('joinRoom', id);
+
+    socket.on('loadMessages', (msgs) => {
+      setChatMessages(msgs);
+    });
+
     socket.on('receiveMessage', (msg) => {
-      setChatMessages(prev => [...prev, msg]);
+      setChatMessages((prev) => {
+        const isDuplicate = prev.some(
+          (m) =>
+            m.timestamp === msg.timestamp &&
+            m.sender?._id === msg.sender?._id &&
+            m.content === msg.content
+        );
+        return isDuplicate ? prev : [...prev, msg];
+      });
     });
 
     return () => {
       socket.emit('leaveRoom', id);
+      socket.off('loadMessages');
       socket.off('receiveMessage');
     };
   }, [id]);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const fetchSpace = async () => {
     try {
@@ -110,11 +130,10 @@ const SpacePage = () => {
     const message = {
       sender: currentUser,
       content: messageInput,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       room: id,
     };
     socket.emit('sendMessage', message);
-    setChatMessages(prev => [...prev, message]);
     setMessageInput('');
   };
 
@@ -153,11 +172,17 @@ const SpacePage = () => {
                 </div>
                 <div className="mt-2">{post.content}</div>
                 {post.imageUrl && (
-                  <img
-                    src={`${API_URL}/${post.imageUrl}`}
-                    alt="post"
-                    className="mt-3 rounded max-h-64 w-full object-cover"
-                  />
+                  <a
+                    href={`${API_URL}/${post.imageUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={`${API_URL}/${post.imageUrl}`}
+                      alt="post"
+                      className="mt-3 rounded max-h-64 w-full object-cover hover:opacity-90"
+                    />
+                  </a>
                 )}
                 <div className="text-xs text-gray-300 mt-2">
                   {new Date(post.createdAt).toLocaleString()}
@@ -225,8 +250,10 @@ const SpacePage = () => {
                   <div key={i} className={`text-sm mb-1 ${msg.sender._id === currentUser._id ? 'text-right' : 'text-left'}`}>
                     <span className="font-semibold">{msg.sender.name}: </span>
                     {msg.content}
+                    <div className="text-xs text-gray-400">{new Date(msg.timestamp).toLocaleTimeString()}</div>
                   </div>
                 ))}
+                <div ref={chatEndRef} />
               </div>
               <input
                 type="text"
