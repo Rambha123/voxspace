@@ -1,10 +1,13 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+
 
 const API_URL = 'http://localhost:6969';
 
 const SpacePage = () => {
+  const [events, setEvents] = useState([]);
   const { id } = useParams();
   const [space, setSpace] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -12,6 +15,8 @@ const SpacePage = () => {
   const [isEvent, setIsEvent] = useState(false);
   const [image, setImage] = useState(null);
   //const userId = localStorage.getItem('userId');
+
+  const navigate = useNavigate();
 
   // Fetch space info
   const fetchSpace = async () => {
@@ -25,6 +30,15 @@ const SpacePage = () => {
       console.error("Failed to fetch space", err);
     }
   };
+  const fetchEvents = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/api/events`);
+    const filtered = res.data.filter(event => event.spaceId === id);
+    setEvents(filtered);
+  } catch (err) {
+    console.error("Failed to fetch events", err);
+  }
+};
 
   // Fetch posts
   const fetchPosts = async () => {
@@ -42,6 +56,7 @@ const SpacePage = () => {
   useEffect(() => {
     fetchSpace();
     fetchPosts();
+    fetchEvents();
   }, []);
 
   // Handle new post
@@ -173,7 +188,32 @@ const SpacePage = () => {
             </button>
           </div>
         </form>
-      </div>
+      
+      {/* Events Specific to This Space */}
+      <div className="mt-6 bg-white text-black p-4 rounded-xl shadow">
+           <div className="flex items-center justify-between mt-2"><h2 className="text-lg font-semibold mb-2">Events for {space.name}</h2>
+           <button
+              onClick={() => navigate(`/events`)}
+              className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+            >
+             Create
+            </button></div>
+            {events.length === 0 ? (
+           <p className="text-sm text-gray-500">No events available for this space.</p>
+          ) : (
+         <ul className="space-y-3">
+         {events.map((event) => (
+        <li key={event._id} className="border p-3 rounded-lg hover:bg-gray-100 transition">
+          <div className="font-bold">{event.title}</div>
+          <div className="text-sm">{event.date} at {event.time}</div>
+          {event.description && <div className="text-sm text-gray-700">{event.description}</div>}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+    </div>
     </div>
   );
 };
