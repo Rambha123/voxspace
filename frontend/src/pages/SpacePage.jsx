@@ -77,6 +77,23 @@ const SpacePage = () => {
     }
   };
 
+  const handleDeleteSpace = async () => {
+  if (!window.confirm("Are you sure you want to delete this space?")) return;
+
+  try {
+    const token = localStorage.getItem('token');
+    await axios.delete(`${API_URL}/api/spaces/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    alert("Space deleted successfully.");
+    window.location.href = '/'; // Redirect user after deletion
+  } catch (err) {
+    alert("Can only be deleted by the owner");
+    console.error("Failed to delete space", err);
+  }
+};
+
+
   const handlePostSubmit = async e => {
     e.preventDefault();
     if (!newPost.trim() && !image) return;
@@ -205,7 +222,7 @@ const SpacePage = () => {
                   onChange={() => setIsEvent(!isEvent)}
                   className="mr-2"
                 />
-                Mark as event
+                Mark as important
               </label>
               <button
                 type="submit"
@@ -260,6 +277,17 @@ const SpacePage = () => {
           )}
         </div>
       </div>
+ 
+  <div className="text-center mb-4">
+    <button
+      onClick={handleDeleteSpace}
+      className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+    >
+      Delete Space
+    </button>
+  </div>
+
+
     </div>
   );
 };

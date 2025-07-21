@@ -1,24 +1,33 @@
 import express from 'express';
 import Event from '../models/Events.js';
-import authMiddleware from '../middleware/authentication.js'; 
-
+import Space from '../models/Space.js';
+import User from '../models/User.js';
+import authMiddleware from '../middleware/authentication.js';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
-// GET all events
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // e.g., your-email@gmail.com
+    pass: process.env.EMAIL_PASS  // App-specific password
+  }
+});
+
+
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch all events and populate space
     const events = await Event.find()
       .populate({
-        path: 'space', 
-        select: 'name members', 
+        path: 'space',
+        select: 'name members',
       });
 
-    // ✅ Filter only events where user is a member of the space
-    const filteredEvents = events.filter(event => 
+    const filteredEvents = events.filter(event =>
       event.space && event.space.members.includes(userId)
     );
 
@@ -29,7 +38,29 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// POST new event
+router.delete('/events/:id', authMiddleware, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    if (event.creator.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to delete this event' });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ message: 'Event deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting event:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+
 router.post('/', async (req, res) => {
   const { title, date, time, description, space } = req.body;
 
@@ -38,6 +69,7 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    // Save the new event
     const newEvent = new Event({
       title,
       date,
@@ -47,10 +79,39 @@ router.post('/', async (req, res) => {
     });
 
     await newEvent.save();
+
+    // Find the space and its members
+    const spaceData = await Space.findById(space).populate('members');
+    if (!spaceData) {
+      return res.status(404).json({ error: 'Space not found' });
+    }
+
+    // Get all member emails
+    const recipientEmails = spaceData.members
+      .map(member => member.email)
+      .filter(Boolean); // only valid emails
+
+    // Send email notification
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: recipientEmails,
+      subject: `New Event in ${spaceData.name}`,
+      text: `A new event has been scheduled in the space "${spaceData.name}":
+
+Title: ${title}
+Date: ${date}
+Time: ${time || 'Not specified'}
+Description: ${description || 'No description'}
+
+Please check the event page for more details.`
+    };
+
+    await transporter.sendMail(mailOptions);
+
     res.status(201).json(newEvent);
   } catch (err) {
-    console.error('Error creating event:', err);
-    res.status(500).json({ error: 'Failed to add event' });
+    console.error('Error creating event or sending emails:', err);
+    res.status(500).json({ error: 'Failed to add event or notify members' });
   }
 });
 

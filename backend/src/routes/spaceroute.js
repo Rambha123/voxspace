@@ -57,6 +57,24 @@ router.post('/join', authMiddleware, async (req, res) => {
   }
 });
 
+// DELETE A SPACE
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const space = await Space.findById(req.params.id);
+    if (!space) return res.status(404).json({ message: 'Space not found' });
+
+    if (space.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Only the creator can delete this space' });
+    }
+
+    await Post.deleteMany({ space: space._id }); // optional: delete related posts
+    await Space.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Space deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete space' });
+  }
+});
+
 
 // GET LOGGED-IN USER'S SPACES
 

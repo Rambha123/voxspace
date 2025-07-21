@@ -6,43 +6,44 @@ const EventsPage = () => {
   const [spaces, setSpaces] = useState([]);
   const [selectedSpace, setSelectedSpace] = useState('');
   const [form, setForm] = useState({ title: '', date: '', time: '', description: '' });
-
-  // Fetch events
-const fetchEvents = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-
-  try {
-    const res = await axios.get('http://localhost:6969/api/events', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setEvents(res.data);
-  } catch (err) {
-    console.error('Failed to fetch events:', err);
-  }
-};
-
-
-  // Fetch spaces user has joined
-const fetchSpaces = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-
-  try {
-    const res = await axios.get('http://localhost:6969/api/spaces/my-spaces', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setSpaces(res.data);
-  } catch (err) {
-    console.error('Failed to fetch spaces:', err);
-  }
-};
-
+  const [adding, setAdding] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) setCurrentUserId(user._id);
+
     fetchEvents();
     fetchSpaces();
   }, []);
+
+  const fetchEvents = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await axios.get('http://localhost:6969/api/events', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEvents(res.data);
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+    }
+  };
+
+  const fetchSpaces = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const res = await axios.get('http://localhost:6969/api/spaces/my-spaces', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSpaces(res.data);
+    } catch (err) {
+      console.error('Failed to fetch spaces:', err);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -50,14 +51,18 @@ const fetchSpaces = async () => {
 
   const handleAddEvent = async (e) => {
     e.preventDefault();
+    setAdding(true);
+
     const today = new Date().toISOString().split("T")[0];
     if (form.date < today) {
       alert("Cannot create an event in the past.");
+      setAdding(false);
       return;
     }
 
     if (!selectedSpace) {
       alert("Please select a space.");
+      setAdding(false);
       return;
     }
 
@@ -71,7 +76,29 @@ const fetchSpaces = async () => {
       setSelectedSpace('');
     } catch (err) {
       console.error('Failed to add event:', err);
+    } finally {
+      setAdding(false);
     }
+  };
+
+  const handleDelete = async (eventId) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      await axios.delete(`http://localhost:6969/api/events/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEvents(events.filter(event => event._id !== eventId));
+    } catch (err) {
+      console.error("Failed to delete event", err);
+    }
+  };
+
+  const isPastEvent = (date) => {
+    const eventDate = new Date(date);
+    const today = new Date();
+    return eventDate < today;
   };
 
   return (
@@ -79,12 +106,11 @@ const fetchSpaces = async () => {
       <div className="max-w-3xl mx-auto text-white">
         <h1 className="text-3xl font-bold mb-8 text-center">Events</h1>
 
-        {/* Event List */}
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-4">Available Events</h2>
           <ul className="space-y-3">
             {events.map((event) => (
-              <li key={event._id} className="bg-[rgb(58,80,107)] rounded-xl p-4 shadow-lg cursor-pointer hover:bg-[rgb(68,90,117)] text transition">
+              <li key={event._id} className="bg-[rgb(58,80,107)] rounded-xl p-4 shadow-lg hover:bg-[rgb(68,90,117)]">
                 <div className="font-semibold">{event.title}</div>
                 <div className="text-sm text-gray-950">
                   {event.date} at {event.time}
@@ -95,18 +121,22 @@ const fetchSpaces = async () => {
                 {event.space && (
                   <div className="mt-1 text-sm text-gray-400 italic">Space: {event.space.name || event.space}</div>
                 )}
+                {/* //{!isPastEvent(event.date) && currentUserId === event.space?.creator && (
+                  <button
+                    onClick={() => handleDelete(event._id)}
+                    className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-500"
+                  >
+                    Delete
+                  </button> */}
+                {/* )} */}
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Add Event Form */}
         <div className="p-6 rounded-lg shadow" style={{ backgroundColor: 'rgb(58, 80, 107)' }}>
           <h2 className="text-2xl font-semibold mb-4 text-white">Add New Event</h2>
           <form onSubmit={handleAddEvent} className="space-y-4">
-           
-           
-            {/* Space Selector */}
             <select
               value={selectedSpace}
               onChange={(e) => setSelectedSpace(e.target.value)}
@@ -155,9 +185,10 @@ const fetchSpaces = async () => {
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded"
+              className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded disabled:opacity-50"
+              disabled={adding}
             >
-              Add Event
+              {adding ? 'Adding...' : 'Add Event'}
             </button>
           </form>
         </div>
