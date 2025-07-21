@@ -13,8 +13,8 @@ router.get('/', authMiddleware, async (req, res) => {
     // Fetch all events and populate space
     const events = await Event.find()
       .populate({
-        path: 'space', // ✅ lowercase, as defined in your Event schema
-        select: 'name members', // Only get space name and members
+        path: 'space', 
+        select: 'name members', 
       });
 
     // ✅ Filter only events where user is a member of the space

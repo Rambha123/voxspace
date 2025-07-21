@@ -104,6 +104,8 @@ const fetchSpaces = async () => {
         <div className="p-6 rounded-lg shadow" style={{ backgroundColor: 'rgb(58, 80, 107)' }}>
           <h2 className="text-2xl font-semibold mb-4 text-white">Add New Event</h2>
           <form onSubmit={handleAddEvent} className="space-y-4">
+           
+           
             {/* Space Selector */}
             <select
               value={selectedSpace}

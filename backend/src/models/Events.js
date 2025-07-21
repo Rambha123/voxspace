@@ -9,8 +9,8 @@ const eventSchema = new mongoose.Schema({
     members: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
-    }], // Assuming Space model exists
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Optional, to track creator
+    }], 
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
 });
 
 export default mongoose.model('Event', eventSchema);

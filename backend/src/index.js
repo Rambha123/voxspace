@@ -1,3 +1,4 @@
+// server.js or index.js
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -9,7 +10,7 @@ import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
 import spaceRoutes from './routes/spaceroute.js';
 import eventRoutes from './routes/events.js';
-import Message from './models/Message.js'; // ✅ Import chat message model
+import Message from './models/Message.js';
 
 dotenv.config();
 
@@ -39,56 +40,55 @@ app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
 
-// 🔌 Socket.IO logic
 io.on('connection', (socket) => {
-  console.log(`🔌 User connected: ${socket.id}`);
+  console.log(`User connected: ${socket.id}`);
 
-  // Join room
   socket.on('joinRoom', async (roomId) => {
     socket.join(roomId);
-    console.log(`👥 User ${socket.id} joined room ${roomId}`);
+    console.log(`User ${socket.id} joined room ${roomId}`);
 
-    // Load last 50 messages from DB
     try {
       const messages = await Message.find({ room: roomId })
-        .sort({ timestamp: 1 }) // oldest to newest
+        .sort({ timestamp: 1 })
         .limit(50);
       socket.emit('loadMessages', messages);
     } catch (err) {
-      console.error('❌ Error loading messages:', err);
+      console.error('Error loading messages:', err);
     }
   });
 
-  // Leave room
   socket.on('leaveRoom', (roomId) => {
     socket.leave(roomId);
-    console.log(`👋 User ${socket.id} left room ${roomId}`);
+    console.log(`User ${socket.id} left room ${roomId}`);
   });
 
-  // Receive + broadcast + save message
   socket.on('sendMessage', async (msg) => {
-    console.log("📨 Message:", msg);
+    console.log("Message received:", msg);
+
     try {
       const newMessage = new Message({
         room: msg.room,
-        sender: msg.sender,
+        sender: {
+          _id: msg.sender._id,
+          name: msg.sender.name
+        },
         content: msg.content,
         timestamp: msg.timestamp || new Date()
       });
+
       await newMessage.save();
-      io.to(msg.room).emit('receiveMessage', newMessage); // emit saved message with _id
+
+      io.to(msg.room).emit('receiveMessage', newMessage); // send saved message with sender info
     } catch (err) {
-      console.error('❌ Failed to save message:', err);
+      console.error('Failed to save message:', err);
     }
   });
 
-  // Disconnect
   socket.on('disconnect', () => {
-    console.log(`❌ User disconnected: ${socket.id}`);
+    console.log(`User disconnected: ${socket.id}`);
   });
 });
 
-// MongoDB + Start Server
 const PORT = process.env.PORT || 5000;
 
 mongoose.connect(process.env.MONGO_URI)
@@ -99,5 +99,5 @@ mongoose.connect(process.env.MONGO_URI)
     });
   })
   .catch((err) => {
-    console.error('❌ Failed to connect to MongoDB:', err);
+    console.error('❌ MongoDB connection failed:', err);
   });

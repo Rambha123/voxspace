@@ -3,14 +3,14 @@ import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
 import Post from '../models/Post.js';
 import authMiddleware from '../middleware/authentication.js';
-import upload from '../middleware/upload.js'; // 🆕 multer middleware
+import upload from '../middleware/upload.js'; //  multer middleware
 import fs from 'fs';
 
 const router = express.Router();
 
-// ===========================
+
 // CREATE A NEW SPACE
-// ===========================
+
 router.post('/create', authMiddleware, async (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ message: "Name is required" });
@@ -32,9 +32,8 @@ router.post('/create', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
 // JOIN A SPACE BY CODE
-// ===========================
+
 router.post('/join', authMiddleware, async (req, res) => {
   const { code } = req.body;
 
@@ -58,9 +57,9 @@ router.post('/join', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
+
 // GET LOGGED-IN USER'S SPACES
-// ===========================
+
 router.get('/my-spaces', authMiddleware, async (req, res) => {
   try {
     const spaces = await Space.find({ members: req.user.id });
@@ -70,9 +69,9 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
+
 // GET A SPECIFIC SPACE BY ID
-// ===========================
+
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
@@ -88,9 +87,9 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
+
 // GET POSTS IN A SPACE
-// ===========================
+
 router.get('/:id/posts', authMiddleware, async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
@@ -118,9 +117,9 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
   }
 });
 
-// ===========================
-// CREATE A POST IN A SPACE (with optional image)
-// ===========================
+
+// CREATE A POST IN A SPACE 
+
 router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, res) => {
   const { content, type } = req.body;
 
@@ -146,9 +145,9 @@ router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, re
   }
 });
 
-// ===========================
-// DELETE A POST (only by author)
-// ===========================
+
+// DELETE A POST 
+
 router.delete('/posts/:postId', authMiddleware, async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -158,7 +157,7 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
       return res.status(403).json({ message: 'Not allowed to delete this post' });
     }
 
-    // Optionally delete image from disk
+    // delete image from disk
     if (post.imageUrl) {
       fs.unlink(post.imageUrl, (err) => {
         if (err) console.error("Failed to delete image:", err);
