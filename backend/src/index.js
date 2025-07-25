@@ -11,6 +11,7 @@ import profileRoutes from './routes/profile.js';
 import spaceRoutes from './routes/spaceroute.js';
 import eventRoutes from './routes/events.js';
 import Message from './models/Message.js';
+import messageRoutes from "./routes/message.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/spaces', spaceRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Default route
 app.get('/', (req, res) => {

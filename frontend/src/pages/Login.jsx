@@ -41,7 +41,7 @@ const Login = (props) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("userName", user.name); // ✅ Store userName separately
-
+      localStorage.setItem("userId", user.id); 
       props.setIsLoggedIn(true);
       navigate("/");
     } catch (err) {
@@ -66,7 +66,8 @@ const Login = (props) => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("userName", user.name); // ✅ Store userName separately
+      localStorage.setItem("userName", user.name);
+       localStorage.setItem("userId", user.id); // ✅ Store userName separately
 
       props.setIsLoggedIn(true);
       navigate("/");

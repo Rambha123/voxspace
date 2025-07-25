@@ -6,10 +6,11 @@ import Signup from './pages/Signup';
 import VerifyEmail from './components/Verifyemail';
 import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
-import Profile from './pages/profile';
+import Profile from './pages/Profile';
 import Events from './pages/Events';
 import SpacePage from './pages/SpacePage';
 import CalendarPage from './pages/CalenderPage';
+import MessagesPage from './pages/MessagePage';
 
 
 
@@ -55,6 +56,7 @@ function App() {
           <Route path="/events" element={<Events isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
           <Route path="/space/:id" element={<SpacePage />} />
           <Route path="/calender" element={<CalendarPage isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
+          <Route path="/message" element={<MessagesPage isLoggedin={isLogedIn} setIsLoggedIn={setisLogedIn} />} />
       </Routes>
 
   

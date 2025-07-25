@@ -58,6 +58,16 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+router.get("/search", async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await User.findOne({ email }, { password: 0 });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Search error", error: err.message });
+  }
+});
 
 //verification
 router.get('/verify-email', async (req, res) => {

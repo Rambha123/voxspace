@@ -50,7 +50,8 @@ export default function Navbar({ isLoggedin, setIsLoggedIn }) {
             <>
               <li><button onClick={() => navigate("/")} className="hover:text-green-500">Home</button></li>
               <li><button onClick={() => navigate("/events")} className="hover:text-green-500">Events</button></li>
-              <li><button onClick={() => navigate("/calender")} className="hover:text-green-500">calender</button></li>
+              <li><button onClick={() => navigate("/message")} className="hover:text-green-500">Message</button></li>
+              <li><button onClick={() => navigate("/calender")} className="hover:text-green-500">Calender</button></li>
               <li><button onClick={handleLogout} className="hover:text-red-500">Logout</button></li>
               <li>
                 {user && (
