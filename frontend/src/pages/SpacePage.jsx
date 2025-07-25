@@ -53,6 +53,7 @@ const SpacePage = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
+
   const fetchSpace = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -64,6 +65,7 @@ const SpacePage = () => {
       console.error("Failed to fetch space", err);
     }
   };
+
 
   const fetchPosts = async () => {
     try {
@@ -95,6 +97,7 @@ const SpacePage = () => {
 
 
   const handlePostSubmit = async e => {
+
     e.preventDefault();
     if (!newPost.trim() && !image) return;
 
@@ -121,6 +124,7 @@ const SpacePage = () => {
     }
   };
 
+
   const handleDelete = async postId => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
@@ -145,6 +149,7 @@ const SpacePage = () => {
     });
     setMessageInput('');
   };
+
 
   if (!space) {
     return <div className="p-4 text-center text-white">Loading space...</div>;
@@ -276,6 +281,7 @@ const SpacePage = () => {
             </div>
           )}
         </div>
+
       </div>
  
   <div className="text-center mb-4">

@@ -142,6 +142,7 @@ const Home = ({ isLoggedin }) => {
           className="z-30 overflow-y-auto bg-[rgb(28,37,50)] p-4 text-white flex flex-col relative"
         >
           <h2 className="text-xl font-semibold mb-4">Calendar</h2>
+
           <div className="flex-grow w-full">
             <div className="bg-white text-black rounded-lg p-2 w-full">
               <FullCalendar
@@ -153,6 +154,7 @@ const Home = ({ isLoggedin }) => {
                 handleWindowResize={true}
               />
             </div>
+
           </div>
           <div className="flex justify-between gap-4 m-5">
             <button
@@ -168,6 +170,7 @@ const Home = ({ isLoggedin }) => {
               View Event
             </button>
           </div>
+
 
           {/* Resizer */}
           <div
