@@ -29,7 +29,7 @@ const Profile = ({ isLoggedin }) => {
           password: '',
         });
       } catch (err) {
-        setMessage({ text: 'Failed to load profile.', type: 'error' });
+        setMessage({ text: 'Failed to load profile.', type: 'error' },err);
       }
     };
 

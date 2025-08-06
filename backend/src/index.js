@@ -35,7 +35,10 @@ app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/spaces', spaceRoutes);
+
 app.use("/api/messages", messageRoutes);
+app.use('/api/events', eventRoutes);
+
 
 // Default route
 app.get('/', (req, res) => {
@@ -101,5 +104,7 @@ mongoose.connect(process.env.MONGO_URI)
     });
   })
   .catch((err) => {
+
     console.error('❌ MongoDB connection failed:', err);
   });
+

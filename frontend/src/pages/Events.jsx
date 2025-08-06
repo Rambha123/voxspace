@@ -192,6 +192,7 @@ const EventsPage = () => {
             </button>
           </form>
         </div>
+
       </div>
     </div>
   );

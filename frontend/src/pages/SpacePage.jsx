@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -6,12 +7,14 @@ import { io } from "socket.io-client";
 const API_URL = 'http://localhost:6969';
 const socket = io(API_URL);
 
+
 const SpacePage = () => {
   const { id } = useParams();
   const [space, setSpace] = useState(null);
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
   const [isEvent, setIsEvent] = useState(false);
+
   const [image, setImage] = useState(null);
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -79,6 +82,7 @@ const SpacePage = () => {
     }
   };
 
+
   const handleDeleteSpace = async () => {
   if (!window.confirm("Are you sure you want to delete this space?")) return;
 
@@ -119,10 +123,12 @@ const SpacePage = () => {
       setNewPost('');
       setIsEvent(false);
       setImage(null);
+
     } catch (err) {
       console.error("Failed to create post", err);
     }
   };
+
 
 
   const handleDelete = async postId => {
@@ -152,10 +158,12 @@ const SpacePage = () => {
 
 
   if (!space) {
+
     return <div className="p-4 text-center text-white">Loading space...</div>;
   }
 
   return (
+
     <div className="min-h-screen px-4 py-8 bg-[rgb(28,37,65)] text-white">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         
@@ -299,8 +307,11 @@ const SpacePage = () => {
   </div>
 
 
+
     </div>
   );
 };
 
+
 export default SpacePage;
+

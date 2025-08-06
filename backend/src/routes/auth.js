@@ -2,8 +2,8 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
-import User from '../models/User.js';
 import nodemailer from 'nodemailer';
+import User from '../models/User.js';
 import dotenv from 'dotenv';
 
 const router = express.Router();
@@ -11,20 +11,17 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
-// mailer
+// Email transporter setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, 
-    pass: process.env.EMAIL_PASS, 
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
 
-
-
-
-// Signup Route
+// Signup Route with Email Verification
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -34,23 +31,16 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      isVerified: false, 
+    const user = await User.create({ name, email, password: hashedPassword });
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1d' });
+
+    res.status(201).json({
+      message: 'Signup successful',
+      token,
+      user: { name: user.name, email: user.email },
     });
 
-    const emailToken = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: '1d' });
-
-    const verificationUrl = `http://localhost:5173/verify-email?token=${emailToken}`;
-
-    await transporter.sendMail({
-      from: `"VoxSpace" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Verify your email',
-      html: `<p>Hello ${name},</p><p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
-    });
 
     res.status(201).json({ message: 'Signup successful. Please verify your email.' });
   } catch (err) {
@@ -81,15 +71,13 @@ router.get('/verify-email', async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: 'Email verified successfully!' }); 
+
   } catch (err) {
-    res.status(400).json({ message: 'Invalid or expired token' }); 
+    res.status(500).json({ message: 'Signup has failed', error: err.message });
   }
 });
 
-
-
-//login
-
+// Traditional Email/Password Login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -115,6 +103,10 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ success: false, message: 'Please verify your email before logging in' });
     }
 
+    if (!user.verified) {
+      return res.status(401).json({ message: 'Please verify your email before logging in.' });
+    }
+
     // Check password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
@@ -138,10 +130,8 @@ router.post('/login', async (req, res) => {
         isVerified: user.isVerified,
       },
     });
-
-  } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ success: false, message: 'Server error during login' });
+  } catch (err) {
+    res.status(500).json({ message: 'Login has failed', error: err.message });
   }
 });
 //google

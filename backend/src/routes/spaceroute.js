@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
 
 
+
 import Post from '../models/Post.js';
 import authMiddleware from '../middleware/authentication.js';
 import upload from '../middleware/upload.js'; //  multer middleware
@@ -14,6 +15,7 @@ const router = express.Router();
 
 
 // CREATE A NEW SPACE
+
 
 router.post('/create', authMiddleware, async (req, res) => {
   const { name } = req.body;
@@ -37,7 +39,9 @@ router.post('/create', authMiddleware, async (req, res) => {
 });
 
 
+
 // JOIN A SPACE BY CODE
+
 
 
 router.post('/join', authMiddleware, async (req, res) => {
@@ -85,6 +89,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 // GET LOGGED-IN USER'S SPACES
 
 
+
 router.get('/my-spaces', authMiddleware, async (req, res) => {
   try {
     const spaces = await Space.find({ members: req.user.id });
@@ -97,6 +102,7 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
 
 
 // GET A SPECIFIC SPACE BY ID
+
 
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
@@ -119,6 +125,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 // GET POSTS IN A SPACE
 
 
+
 router.get('/:id/posts', authMiddleware, async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
@@ -135,9 +142,11 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
       content: post.content,
       type: post.type,
       createdAt: post.createdAt,
+
       authorName: post.authorName || post.authorId?.name || 'Unknown',
       authorId: post.authorId?._id?.toString(),
       imageUrl: post.imageUrl || null
+
     }));
 
     res.json(formatted);
@@ -147,9 +156,11 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
 });
 
 
+
 // CREATE A POST IN A SPACE 
 
 router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, res) => {
+
 
   const { content, type } = req.body;
 
@@ -165,8 +176,10 @@ router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, re
       type: type === 'event' ? 'event' : 'normal',
       authorId: req.user.id,
 
+
       authorName: req.user.name,
       imageUrl: req.file ? req.file.path : null
+
 
     });
 
@@ -175,9 +188,12 @@ router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, re
   } catch (err) {
 
 
+
+
     res.status(400).json({ message: 'Failed to create post' });
   }
 });
+
 
 
 // DELETE A POST 
@@ -207,3 +223,4 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
 
 
 export default router;
+
