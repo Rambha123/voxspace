@@ -1,12 +1,16 @@
 import express from 'express';
 import { nanoid } from 'nanoid';
 import Space from '../models/Space.js';
+
+
 import Post from '../models/Post.js';
 import authMiddleware from '../middleware/authentication.js';
 import upload from '../middleware/upload.js'; //  multer middleware
 import fs from 'fs';
 
+
 const router = express.Router();
+
 
 
 // CREATE A NEW SPACE
@@ -32,7 +36,9 @@ router.post('/create', authMiddleware, async (req, res) => {
   }
 });
 
+
 // JOIN A SPACE BY CODE
+
 
 router.post('/join', authMiddleware, async (req, res) => {
   const { code } = req.body;
@@ -78,6 +84,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
 // GET LOGGED-IN USER'S SPACES
 
+
 router.get('/my-spaces', authMiddleware, async (req, res) => {
   try {
     const spaces = await Space.find({ members: req.user.id });
@@ -86,6 +93,7 @@ router.get('/my-spaces', authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Error fetching spaces" });
   }
 });
+
 
 
 // GET A SPECIFIC SPACE BY ID
@@ -106,7 +114,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 
+
+
 // GET POSTS IN A SPACE
+
 
 router.get('/:id/posts', authMiddleware, async (req, res) => {
   try {
@@ -139,6 +150,7 @@ router.get('/:id/posts', authMiddleware, async (req, res) => {
 // CREATE A POST IN A SPACE 
 
 router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, res) => {
+
   const { content, type } = req.body;
 
   try {
@@ -152,13 +164,17 @@ router.post('/:id/posts', authMiddleware, upload.single('image'), async (req, re
       content,
       type: type === 'event' ? 'event' : 'normal',
       authorId: req.user.id,
+
       authorName: req.user.name,
       imageUrl: req.file ? req.file.path : null
+
     });
 
     await post.save();
     res.status(201).json(post);
   } catch (err) {
+
+
     res.status(400).json({ message: 'Failed to create post' });
   }
 });
@@ -189,5 +205,5 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
 
+export default router;

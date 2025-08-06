@@ -38,20 +38,15 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-router.delete('/events/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate('space');
+    if (!event) return res.status(404).json({ error: 'Event not found' });
 
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
-    }
-
-    if (event.creator.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to delete this event' });
-    }
+    const isOwner = event.space?.createdBy?.toString() === req.user.id;
+    if (!isOwner) return res.status(403).json({ error: 'Not authorized to delete this event' });
 
     await Event.findByIdAndDelete(req.params.id);
-
     res.status(200).json({ message: 'Event deleted successfully' });
   } catch (err) {
     console.error('Error deleting event:', err);

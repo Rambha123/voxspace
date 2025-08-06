@@ -53,6 +53,7 @@ const SpacePage = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
+
   const fetchSpace = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -64,6 +65,7 @@ const SpacePage = () => {
       console.error("Failed to fetch space", err);
     }
   };
+
 
   const fetchPosts = async () => {
     try {
@@ -95,6 +97,7 @@ const SpacePage = () => {
 
 
   const handlePostSubmit = async e => {
+
     e.preventDefault();
     if (!newPost.trim() && !image) return;
 
@@ -121,6 +124,7 @@ const SpacePage = () => {
     }
   };
 
+
   const handleDelete = async postId => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
@@ -146,6 +150,7 @@ const SpacePage = () => {
     setMessageInput('');
   };
 
+
   if (!space) {
     return <div className="p-4 text-center text-white">Loading space...</div>;
   }
@@ -155,8 +160,18 @@ const SpacePage = () => {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Posts */}
-        <div className="md:col-span-2 space-y-4">
-          <h1 className="text-3xl font-bold mb-6 text-center">{space.name}</h1>
+        <div className="md:col-span-2 space-y-4 S">
+        <div className="flex items-center justify-between mb-6">
+  <h1 className="text-3xl font-bold text-center w-full">{space.name}</h1>
+  <button
+    onClick={handleDeleteSpace}
+    className=" hover:bg-red-500 text-white px-4 py-2 rounded ml-auto"
+  >
+    Delete Space
+  </button>
+</div>
+
+    
           {posts.length === 0 
             ? <p className="text-center text-gray-300">No notices yet.</p>
             : posts.map(post => (
@@ -276,15 +291,11 @@ const SpacePage = () => {
             </div>
           )}
         </div>
+
       </div>
  
   <div className="text-center mb-4">
-    <button
-      onClick={handleDeleteSpace}
-      className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
-    >
-      Delete Space
-    </button>
+   
   </div>
 
 

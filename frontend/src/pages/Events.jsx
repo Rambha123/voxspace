@@ -128,6 +128,12 @@ const EventsPage = () => {
                   >
                     Delete
                   </button> */}
+                  <button
+                    onClick={() => handleDelete(event._id)}
+                    className="mt-2 px-3 py-1  text-white rounded hover:bg-red-500"
+                  >
+                    Delete
+                  </button>
                 {/* )} */}
               </li>
             ))}

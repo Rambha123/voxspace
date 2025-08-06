@@ -2,6 +2,9 @@ import express from "express";
 import Message from "../models/Message.js";
 import authMiddleware from "../middleware/authentication.js";
 import User from "../models/User.js";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
 
@@ -39,6 +42,27 @@ router.get("/contacts/:myId", async (req, res) => {
     console.error("Error getting contacts:", err);
     res.status(500).json({ message: "Failed to fetch contacts." });
   }
+});
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = 'uploads/messages';
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
+
+// POST /api/messages/upload — handle file upload
+router.post('/upload', authMiddleware, upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  res.json({ fileUrl: `${req.protocol}://${req.get('host')}/uploads/messages/${req.file.filename}` });
+
 });
 
 export default router;
