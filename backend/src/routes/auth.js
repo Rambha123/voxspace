@@ -40,6 +40,38 @@ router.post('/signup', async (req, res) => {
       token,
       user: { name: user.name, email: user.email },
     });
+
+
+    res.status(201).json({ message: 'Signup successful. Please verify your email.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Signup failed', error: err.message });
+  }
+});
+
+router.get("/search", async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await User.findOne({ email }, { password: 0 });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Search error", error: err.message });
+  }
+});
+
+//verification
+router.get('/verify-email', async (req, res) => {
+  const { token } = req.query;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(400).json({ message: 'Invalid token' });
+
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({ message: 'Email verified successfully!' }); 
+
   } catch (err) {
     res.status(500).json({ message: 'Signup has failed', error: err.message });
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,13 @@ const Home = ({ isLoggedin }) => {
   const [joinCode, setJoinCode] = useState('');
   const [spaces, setSpaces] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const [sidebarWidth, setSidebarWidth] = useState(350); // Default width
+  const sidebarRef = useRef(null);
+  const calendarRef = useRef(null);
+  const isResizingRef = useRef(false);
+  
 
   const navigate = useNavigate();
 
@@ -32,12 +39,14 @@ const Home = ({ isLoggedin }) => {
   };
 
   const fetchCalendarEvents = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
     try {
-      const res = await axios.get(`${API_URL}/api/events`);
+      const res = await axios.get(`${API_URL}/api/events`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const events = res.data.map(evt => ({
         title: evt.title,
-        // If you want to include time, use this format:
-        // date: evt.time ? `${evt.date}T${evt.time}` : evt.date,
         date: evt.date,
       }));
       setCalendarEvents(events);
@@ -53,13 +62,19 @@ const Home = ({ isLoggedin }) => {
     }
   }, [isLoggedin]);
 
+  useEffect(() => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().updateSize();
+    }
+  }, [calendarEvents, sidebarWidth]);
+
   const handleCreateSpace = async () => {
     if (spaceName.trim() === "") return;
     const token = localStorage.getItem('token');
     if (!token) return;
 
     try {
-      const res = await axios.post(`${API_URL}/api/spaces/create`, 
+      const res = await axios.post(`${API_URL}/api/spaces/create`,
         { name: spaceName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +93,7 @@ const Home = ({ isLoggedin }) => {
     if (!token) return;
 
     try {
-      const res = await axios.post(`${API_URL}/api/spaces/join`, 
+      const res = await axios.post(`${API_URL}/api/spaces/join`,
         { code: joinCode.toUpperCase() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -91,23 +106,55 @@ const Home = ({ isLoggedin }) => {
     }
   };
 
+  const handleMouseDown = () => {
+    isResizingRef.current = true;
+  };
+
+  const handleMouseUp = () => {
+    isResizingRef.current = false;
+  };
+
+  const handleMouseMove = (e) => {
+    if (isResizingRef.current) {
+      const newWidth = Math.max(240, e.clientX);
+      setSidebarWidth(newWidth);
+      if (calendarRef.current) {
+        calendarRef.current.getApi().updateSize();
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-[rgb(28,37,65)]">
       {isLoggedin && (
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-95 overflow-y-auto bg-[rgb(28,37,50)] p-4 text-white
-            transform transition-transform duration-300 ease-in-out
-            lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          ref={sidebarRef}
+          style={{ width: `${sidebarWidth}px` }}
+          className="z-30 overflow-y-auto bg-[rgb(28,37,50)] p-4 text-white flex flex-col relative"
         >
           <h2 className="text-xl font-semibold mb-4">Calendar</h2>
-          <div className="bg-white text-black rounded-lg p-2">
-            <FullCalendar
-              plugins={[dayGridPlugin]}
-              initialView="dayGridMonth"
-              height="400px"
 
-              events={calendarEvents}  
-            />
+          <div className="flex-grow w-full">
+            <div className="bg-white text-black rounded-lg p-2 w-full">
+              <FullCalendar
+                ref={calendarRef}
+                plugins={[dayGridPlugin]}
+                initialView="dayGridMonth"
+                height="auto"
+                events={calendarEvents}
+                handleWindowResize={true}
+              />
+            </div>
+
           </div>
           <div className="flex justify-between gap-4 m-5">
             <button
@@ -124,17 +171,16 @@ const Home = ({ isLoggedin }) => {
             </button>
           </div>
 
+
+          {/* Resizer */}
+          <div
+            onMouseDown={handleMouseDown}
+            className="absolute right-0 top-0 h-full w-2 cursor-col-resize bg-transparent z-50"
+          />
         </aside>
       )}
 
-      {isLoggedin && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black opacity-50 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
-
-      <div className={`flex flex-col flex-grow ${isLoggedin ? 'lg:ml-7' : ''}`}>
+      <div className="flex flex-col flex-grow">
         {isLoggedin && (
           <header className="flex items-center justify-between p-4 bg-[rgb(28,37,65)] text-white lg:hidden">
             <button
@@ -147,7 +193,6 @@ const Home = ({ isLoggedin }) => {
               </svg>
             </button>
             <h1 className="text-lg font-semibold">Home</h1>
-            <div></div>
           </header>
         )}
 
@@ -184,7 +229,20 @@ const Home = ({ isLoggedin }) => {
                       onClick={() => navigate(`/space/${space._id}`)}
                     >
                       <h3 className="text-lg font-semibold mb-2">{space.name}</h3>
-                      <p className="text-sm text-gray-300 mb-2">Code: {space.code}</p>
+                     <p
+                           className="text-sm text-gray-300 mb-2 underline cursor-pointer"
+                          onClick={(e) => {
+                           e.stopPropagation();
+                            navigator.clipboard.writeText(space.code);
+                          setCopiedId(space._id);
+                          setTimeout(() => setCopiedId(null), 2000); // Reset after 2 seconds
+                          }}
+                            >Code: {space.code}
+                      </p>
+
+{copiedId === space._id && (
+  <span className="text-xs text-green-400">Copied!</span>
+)}
                       <button className="mt-auto px-3 py-1 text-sm bg-green-600 hover:bg-green-500 rounded">
                         Open
                       </button>
@@ -197,6 +255,7 @@ const Home = ({ isLoggedin }) => {
         </main>
       </div>
 
+      {/* Modals */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-40">
           <div className="bg-white p-6 rounded-lg w-96">

@@ -9,9 +9,9 @@ const Login = (props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    
     window.google.accounts.id.initialize({
-      client_id: "893023489805-v26nltvaafsvugnr9gtnl9jdt4c4brh9.apps.googleusercontent.com",
+      client_id:
+        "893023489805-v26nltvaafsvugnr9gtnl9jdt4c4brh9.apps.googleusercontent.com",
       callback: handleGoogleCallback,
     });
 
@@ -40,12 +40,15 @@ const Login = (props) => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-
+      localStorage.setItem("userName", user.name); // ✅ Store userName separately
+      localStorage.setItem("userId", user.id); 
       props.setIsLoggedIn(true);
       navigate("/");
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      setError(
+        err.response?.data?.message || "Login failed. Please try again."
+      );
     }
   };
 
@@ -63,6 +66,8 @@ const Login = (props) => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("userName", user.name);
+       localStorage.setItem("userId", user.id); // ✅ Store userName separately
 
       props.setIsLoggedIn(true);
       navigate("/");
