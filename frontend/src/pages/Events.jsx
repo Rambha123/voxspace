@@ -121,13 +121,7 @@ const EventsPage = () => {
                 {event.space && (
                   <div className="mt-1 text-sm text-gray-400 italic">Space: {event.space.name || event.space}</div>
                 )}
-                {/* //{!isPastEvent(event.date) && currentUserId === event.space?.creator && (
-                  <button
-                    onClick={() => handleDelete(event._id)}
-                    className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-500"
-                  >
-                    Delete
-                  </button> */}
+               
                   <button
                     onClick={() => handleDelete(event._id)}
                     className="mt-2 px-3 py-1  text-white rounded hover:bg-red-500"

@@ -11,8 +11,8 @@ const router = express.Router();
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // e.g., your-email@gmail.com
-    pass: process.env.EMAIL_PASS  // App-specific password
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS  
   }
 });
 
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
 
     await newEvent.save();
 
-    // Find the space and its members
+    
     const spaceData = await Space.findById(space).populate('members');
     if (!spaceData) {
       return res.status(404).json({ error: 'Space not found' });
