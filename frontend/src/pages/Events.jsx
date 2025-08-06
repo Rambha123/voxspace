@@ -18,18 +18,26 @@ const EventsPage = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+  const token = localStorage.getItem('token');
+  if (!token) return;
 
-    try {
-      const res = await axios.get('http://localhost:6969/api/events', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setEvents(res.data);
-    } catch (err) {
-      console.error('Failed to fetch events:', err);
-    }
-  };
+  try {
+    const res = await axios.get('http://localhost:6969/api/events', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const sorted = res.data.sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
+      const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
+      return dateA - dateB;
+    });
+
+    setEvents(sorted);
+  } catch (err) {
+    console.error('Failed to fetch events:', err);
+  }
+};
+
 
   const fetchSpaces = async () => {
     const token = localStorage.getItem('token');
@@ -95,11 +103,7 @@ const EventsPage = () => {
     }
   };
 
-  const isPastEvent = (date) => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    return eventDate < today;
-  };
+
 
   return (
     <div className="min-h-screen px-4 py-8" style={{ backgroundColor: 'rgb(28, 37, 65)' }}>

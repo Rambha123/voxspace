@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import io from "socket.io-client";
@@ -7,6 +6,7 @@ const API_URL = "http://localhost:6969";
 const socket = io(API_URL);
 
 const MessagesPage = () => {
+  const [currentUser, setCurrentUser] = useState(null);
   const [searchEmail, setSearchEmail] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -15,27 +15,64 @@ const MessagesPage = () => {
   const [messageInput, setMessageInput] = useState("");
   const chatEndRef = useRef(null);
 
-  const currentUser = {
-    _id: localStorage.getItem("userId"),
-    name: localStorage.getItem("userName") || "You",
-  };
+
+
 
   useEffect(() => {
+    const id = localStorage.getItem("userId");
+    const name = localStorage.getItem("userName");
+
+    if (id) {
+      setCurrentUser({ _id: id, name: name || "You" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
     socket.on("receiveMessage", (msg) => {
       if (selectedUser && msg.sender._id === selectedUser._id) {
         setMessages((prev) => [...prev, msg]);
       }
 
       setContacts((prevContacts) => {
-        const exists = prevContacts.some((c) => c._id === msg.sender._id);
-        return exists ? prevContacts : [msg.sender, ...prevContacts];
+        const updated = {
+          _id: msg.sender._id,
+          name: msg.sender.name,
+          email: msg.sender.email,
+          lastMessage: msg.content,
+          timestamp: msg.timestamp,
+        };
+
+        const filtered = prevContacts.filter((c) => c._id !== msg.sender._id);
+        return [updated, ...filtered];
       });
     });
 
     return () => {
       socket.off("receiveMessage");
     };
-  }, [selectedUser]);
+  }, [currentUser, selectedUser]);
+
+ useEffect(() => {
+  const fetchMyContacts = async () => {
+    const token = localStorage.getItem("token");
+    if (!currentUser || !token) return;
+
+    try {
+      const res = await axios.get(`${API_URL}/api/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setContacts(res.data.contacts || []);
+    } catch (err) {
+      console.error("Failed to load contacts:", err.response?.data || err.message);
+    }
+  };
+
+  fetchMyContacts();
+}, [currentUser]);
+
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,31 +91,39 @@ const MessagesPage = () => {
     }
   };
 
-  const openChat = async (user) => {
-    setSelectedUser(user);
-    setSearchResults([]);
-    setSearchEmail("");
+ const openChat = async (user) => {
+  setSelectedUser(user);
+  setSearchResults([]);
+  setSearchEmail("");
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_URL}/api/messages/${user._id}`, {
+  try {
+    const token = localStorage.getItem("token");
+
+    await axios.post(`${API_URL}/api/user/add-contact/${user._id}`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const res = await axios.get(`${API_URL}/api/messages/${user._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setMessages(res.data || []);
+    const refreshContacts = async () => {
+      const res = await axios.get(`${API_URL}/api/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessages(res.data || []);
+      setContacts(res.data.contacts || []);
+    };
+    await refreshContacts();
 
-      setContacts((prev) => {
-        const exists = prev.find((c) => c._id === user._id);
-        return exists ? prev : [user, ...prev];
-      });
-
+    if (currentUser) {
       socket.emit("joinRoom", getRoomId(currentUser._id, user._id));
-    } catch (err) {
-      console.error("Failed to load messages", err);
     }
-  };
+  } catch (err) {
+    console.error("Failed to open chat or refresh contacts", err);
+  }
+};
 
   const sendMessage = () => {
-    if (!messageInput.trim() || !selectedUser) return;
+    if (!messageInput.trim() || !selectedUser || !currentUser) return;
 
     const msg = {
       sender: currentUser,
@@ -96,7 +141,7 @@ const MessagesPage = () => {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file || !selectedUser) return;
+    if (!file || !selectedUser || !currentUser) return;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -129,6 +174,15 @@ const MessagesPage = () => {
   const getRoomId = (id1, id2) => {
     return [id1, id2].sort().join("_");
   };
+
+  // Show loading screen until currentUser is ready
+  if (!currentUser) {
+    return (
+      <div className="h-screen flex items-center justify-center text-white bg-[rgb(28,37,65)]">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[rgb(28,37,65)] text-white">
@@ -179,7 +233,10 @@ const MessagesPage = () => {
                   : "hover:bg-gray-600"
               }`}
             >
-              {user.name} ({user.email})
+              <div className="font-semibold">{user.name}</div>
+              <div className="text-xs text-gray-400 truncate">
+                {user.lastMessage}
+              </div>
             </div>
           ))}
         </div>
@@ -204,34 +261,32 @@ const MessagesPage = () => {
                 >
                   <div className="font-semibold text-sm">{msg.sender.name}</div>
                   {msg.isFile ? (
-                    
-                 <a
-  href={msg.content}
-  download
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-[rgb(58,80,107)] text-blue-300 underline px-3 py-2 inline-block rounded-lg"
->
-  Download File
-</a>
-
+                    <a
+                      href={msg.content}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-[rgb(58,80,107)] text-blue-300 underline px-3 py-2 inline-block rounded-lg"
+                    >
+                      Download File
+                    </a>
                   ) : (
                     <div className="bg-[rgb(58,80,107)] rounded-lg px-3 py-2 inline-block break-all">
-  {msg.content.startsWith("http") && msg.content.includes("/uploads/messages/") ? (
-    <a
-      href={msg.content}
-      download
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-300 underline"
-    >
-      Download File
-    </a>
-  ) : (
-    msg.content
-  )}
-</div>
-
+                      {msg.content.startsWith("http") &&
+                      msg.content.includes("/uploads/messages/") ? (
+                        <a
+                          href={msg.content}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-300 underline"
+                        >
+                          Download File
+                        </a>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
                   )}
                   <div className="text-xs text-gray-400">
                     {new Date(msg.timestamp).toLocaleTimeString()}

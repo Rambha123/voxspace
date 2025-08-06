@@ -6,15 +6,21 @@ import prof from '../middleware/prof.js';
 const router = express.Router();
 
 // GET /api/users/me
+// GET /api/users/me
 router.get('/me', prof, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('contacts', '_id name email');
+
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (err) {
+    console.error("Error fetching user profile:", err);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // PUT /api/users/me
 router.put('/me', prof, async (req, res) => {

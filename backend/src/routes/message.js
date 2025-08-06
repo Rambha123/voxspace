@@ -23,47 +23,46 @@ router.get("/:userId", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/contacts/:myId", async (req, res) => {
+// GET /api/messages/contacts — get all chat contacts with latest message
+router.get("/contacts", authMiddleware, async (req, res) => {
   try {
-    const myId = req.params.myId;
+    const myId = req.user.id;
 
-    const messages = await Message.find({ "sender.id": myId });
+    // Find all messages where the current user is involved
+    const messages = await Message.find({
+      room: new RegExp(myId),
+    }).sort({ timestamp: -1 });
 
-    const contactIds = new Set();
-    messages.forEach(msg => {
-      const otherId = msg.room.split("").find(id => id !== myId);
-      if (otherId) contactIds.add(otherId);
-    });
+    const contactMap = new Map();
 
-    const users = await User.find({ _id: { $in: [...contactIds] } }, { password: 0 });
+    for (const msg of messages) {
+      const [id1, id2] = msg.room.split("_");
+      const otherId = id1 === myId ? id2 : id2 === myId ? id1 : null;
 
-    res.json(users);
+      if (!otherId || contactMap.has(otherId)) continue;
+
+      const user = await User.findById(otherId).select("_id name email");
+      if (user) {
+        contactMap.set(otherId, {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          lastMessage: msg.content,
+          timestamp: msg.timestamp,
+        });
+      }
+    }
+
+    // Convert to array and sort by latest timestamp
+    const contacts = Array.from(contactMap.values()).sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
+
+    res.json(contacts);
   } catch (err) {
-    console.error("Error getting contacts:", err);
+    console.error("Error fetching contacts:", err);
     res.status(500).json({ message: "Failed to fetch contacts." });
   }
 });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = 'uploads/messages';
-    fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
-
-// POST /api/messages/upload — handle file upload
-router.post('/upload', authMiddleware, upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-  res.json({ fileUrl: `${req.protocol}://${req.get('host')}/uploads/messages/${req.file.filename}` });
-
-});
-
-export default router;
+export default router
